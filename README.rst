@@ -2,14 +2,18 @@
 django-cloudbridge
 =============================
 
-.. image:: https://badge.fury.io/py/django-cloudbridge.svg
-    :target: https://badge.fury.io/py/django-cloudbridge
+.. image:: https://img.shields.io/pypi/v/django-cloudbridge.svg
+   :target: https://pypi.python.org/pypi/django-cloudbridge.svg/
+   :alt: latest version available on PyPI
 
 .. image:: https://travis-ci.org/cloudvl/django-cloudbridge.svg?branch=master
-    :target: https://travis-ci.org/cloudvl/django-cloudbridge
+   :target: https://travis-ci.org/cloudvl/django-cloudbridge
+   :alt: Travis Build Status
 
-.. image:: https://coveralls.io/gh/cloudvl/django-cloudbridge/branch/master/graph/badge.svg
-    :target: https://coveralls.io/gh/cloudvl/django-cloudbridge
+.. image:: https://coveralls.io/repos/github/cloudvl/django-cloudbridge/badge.svg?branch=master
+   :target: https://coveralls.io/github/cloudvl/django-cloudbridge?branch=master
+   :alt: Test Coverage Report
+
 
 A ReSTful web api backed by cloudbridge for interacting with cloud providers
 

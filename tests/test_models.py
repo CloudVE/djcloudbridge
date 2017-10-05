@@ -10,8 +10,6 @@ Tests for `django-cloudbridge` models module.
 
 from django.test import TestCase
 
-from django_cloudbridge import models
-
 
 class TestDjango_cloudbridge(TestCase):
 

@@ -45,7 +45,12 @@ readme = open('README.rst').read()
 history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 REQS_BASE = [
-    'django-model-utils>=3.0'
+    'django-model-utils>=3.0',
+    'djangorestframework>=3.0.0',
+    'drf-nested-routers',
+    'django-rest-auth',  # for user serialization
+    'django-fernet-fields',  # for encryption of user cloud credentials
+    'cloudbridge'
 ]
 
 REQS_TEST = ([
@@ -57,7 +62,7 @@ REQS_TEST = ([
 
 REQS_DEV = ([
     'sphinx>=1.3.1',
-    'bumpversion==0.5.3'] + REQS_TEST
+    'bumpversion>=0.5.3'] + REQS_TEST
 )
 
 
