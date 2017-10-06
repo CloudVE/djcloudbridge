@@ -145,7 +145,7 @@ class AWSCredentials(Credentials):
     secret_key = EncryptedCharField(max_length=50, blank=False, null=False)
 
     class Meta:
-        verbose_name = "AWS Credentials"
+        verbose_name = "AWS Credential"
         verbose_name_plural = "AWS Credentials"
 
     def as_dict(self):
@@ -163,7 +163,7 @@ class OpenStackCredentials(Credentials):
     user_domain_name = models.CharField(max_length=50, blank=True, null=True)
 
     class Meta:
-        verbose_name = "OpenStack Credentials"
+        verbose_name = "OpenStack Credential"
         verbose_name_plural = "OpenStack Credentials"
 
     def as_dict(self):
@@ -191,7 +191,7 @@ class GCECredentials(Credentials):
         super(GCECredentials, self).save(*args, **kwargs)
 
     class Meta:
-        verbose_name = "GCE Credentials"
+        verbose_name = "GCE Credential"
         verbose_name_plural = "GCE Credentials"
 
     def as_dict(self):
@@ -205,7 +205,7 @@ class AzureCredentials(Credentials):
     tenant = models.CharField(max_length=50, blank=True, null=True)
 
     class Meta:
-        verbose_name = "Azure Credentials"
+        verbose_name = "Azure Credential"
         verbose_name_plural = "Azure Credentials"
 
     def as_dict(self):
@@ -221,6 +221,10 @@ class UserProfile(models.Model):
     # Link UserProfile to a User model instance
     user = models.OneToOneField(User)
     slug = models.SlugField(unique=True, primary_key=True, editable=False)
+
+    class Meta:
+        verbose_name = "User Profile"
+        verbose_name_plural = "User Profiles"
 
     def __str__(self):
         return "{0} ({1} {2})".format(self.user.username, self.user.first_name,

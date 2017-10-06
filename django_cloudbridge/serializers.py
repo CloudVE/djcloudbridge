@@ -25,28 +25,31 @@ class RegionSerializer(serializers.Serializer):
         lookup_url_kwarg='pk',
         parent_url_kwargs=['cloud_pk'])
     name = serializers.CharField()
-    zones = CustomHyperlinkedIdentityField(view_name='zone-list',
-                                           lookup_field='id',
-                                           lookup_url_kwarg='region_pk',
-                                           parent_url_kwargs=['cloud_pk'])
+    zones = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:zone-list',
+        lookup_field='id',
+        lookup_url_kwarg='region_pk',
+        parent_url_kwargs=['cloud_pk'])
 
 
 class MachineImageSerializer(serializers.Serializer):
     id = serializers.CharField(read_only=True)
-    url = CustomHyperlinkedIdentityField(view_name='machine_image-detail',
-                                         lookup_field='id',
-                                         lookup_url_kwarg='pk',
-                                         parent_url_kwargs=['cloud_pk'])
+    url = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:machine_image-detail',
+        lookup_field='id',
+        lookup_url_kwarg='pk',
+        parent_url_kwargs=['cloud_pk'])
     name = serializers.CharField()
     description = serializers.CharField()
 
 
 class KeyPairSerializer(serializers.Serializer):
     id = serializers.CharField(read_only=True)
-    url = CustomHyperlinkedIdentityField(view_name='keypair-detail',
-                                         lookup_field='id',
-                                         lookup_url_kwarg='pk',
-                                         parent_url_kwargs=['cloud_pk'])
+    url = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:keypair-detail',
+        lookup_field='id',
+        lookup_url_kwarg='pk',
+        parent_url_kwargs=['cloud_pk'])
     name = serializers.CharField()
     material = serializers.CharField(read_only=True)
 
@@ -60,17 +63,18 @@ class VMFirewallRuleSerializer(serializers.Serializer):
     from_port = serializers.CharField(allow_blank=True)
     to_port = serializers.CharField(allow_blank=True)
     cidr = serializers.CharField(label="CIDR", allow_blank=True)
-    firewall = ProviderPKRelatedField(label="VM Firewall",
-                                      queryset='security.vm_firewalls',
-                                      display_fields=['name', 'id'],
-                                      display_format="{0} (ID: {1})",
-                                      required=False,
-                                      allow_null=True)
-    url = CustomHyperlinkedIdentityField(view_name='vm_firewall_rule-detail',
-                                         lookup_field='id',
-                                         lookup_url_kwarg='pk',
-                                         parent_url_kwargs=['cloud_pk',
-                                                            'vm_firewall_pk'])
+    firewall = ProviderPKRelatedField(
+        label="VM Firewall",
+        queryset='security.vm_firewalls',
+        display_fields=['name', 'id'],
+        display_format="{0} (ID: {1})",
+        required=False,
+        allow_null=True)
+    url = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:vm_firewall_rule-detail',
+        lookup_field='id',
+        lookup_url_kwarg='pk',
+        parent_url_kwargs=['cloud_pk', 'vm_firewall_pk'])
 
     def validate(self, data):
         """Cursory data check."""
@@ -113,22 +117,25 @@ class VMFirewallRuleSerializer(serializers.Serializer):
 
 class VMFirewallSerializer(serializers.Serializer):
     id = serializers.CharField(read_only=True)
-    url = CustomHyperlinkedIdentityField(view_name='vm_firewall-detail',
-                                         lookup_field='id',
-                                         lookup_url_kwarg='pk',
-                                         parent_url_kwargs=['cloud_pk'])
+    url = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:vm_firewall-detail',
+        lookup_field='id',
+        lookup_url_kwarg='pk',
+        parent_url_kwargs=['cloud_pk'])
     name = serializers.CharField()
     # Technically, the description is required but when wanting to reuse an
     # existing VM firewall with a different resource (eg, creating an
     # instance), we need to be able to call this serializer w/o it.
     description = serializers.CharField(required=False)
-    network_id = ProviderPKRelatedField(queryset='networking.networks',
-                                        display_fields=['id', 'name'],
-                                        display_format="{1} ({0})")
-    rules = CustomHyperlinkedIdentityField(view_name='vm_firewall_rule-list',
-                                           lookup_field='id',
-                                           lookup_url_kwarg='vm_firewall_pk',
-                                           parent_url_kwargs=['cloud_pk'])
+    network_id = ProviderPKRelatedField(
+        queryset='networking.networks',
+        display_fields=['id', 'name'],
+        display_format="{1} ({0})")
+    rules = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:vm_firewall_rule-list',
+        lookup_field='id',
+        lookup_url_kwarg='vm_firewall_pk',
+        parent_url_kwargs=['cloud_pk'])
 
     def create(self, validated_data):
         provider = view_helpers.get_cloud_provider(self.context.get('view'))
@@ -139,17 +146,19 @@ class VMFirewallSerializer(serializers.Serializer):
 
 class NetworkSerializer(serializers.Serializer):
     id = serializers.CharField(read_only=True)
-    url = CustomHyperlinkedIdentityField(view_name='network-detail',
-                                         lookup_field='id',
-                                         lookup_url_kwarg='pk',
-                                         parent_url_kwargs=['cloud_pk'])
+    url = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:network-detail',
+        lookup_field='id',
+        lookup_url_kwarg='pk',
+        parent_url_kwargs=['cloud_pk'])
     name = serializers.CharField()
     state = serializers.CharField(read_only=True)
     cidr_block = serializers.CharField(read_only=True)
-    subnets = CustomHyperlinkedIdentityField(view_name='subnet-list',
-                                             lookup_field='id',
-                                             lookup_url_kwarg='network_pk',
-                                             parent_url_kwargs=['cloud_pk'])
+    subnets = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:subnet-list',
+        lookup_field='id',
+        lookup_url_kwarg='network_pk',
+        parent_url_kwargs=['cloud_pk'])
 
     def create(self, validated_data):
         provider = view_helpers.get_cloud_provider(self.context.get('view'))
@@ -166,11 +175,11 @@ class NetworkSerializer(serializers.Serializer):
 
 class SubnetSerializer(serializers.Serializer):
     id = serializers.CharField(read_only=True)
-    url = CustomHyperlinkedIdentityField(view_name='subnet-detail',
-                                         lookup_field='id',
-                                         lookup_url_kwarg='pk',
-                                         parent_url_kwargs=['cloud_pk',
-                                                            'network_pk'])
+    url = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:subnet-detail',
+        lookup_field='id',
+        lookup_url_kwarg='pk',
+        parent_url_kwargs=['cloud_pk', 'network_pk'])
     name = serializers.CharField(allow_blank=True)
     cidr_block = serializers.CharField()
     network_id = serializers.CharField(read_only=True)
@@ -201,9 +210,10 @@ class StaticIPSerializer(serializers.Serializer):
 
 class VMTypeSerializer(serializers.Serializer):
     id = serializers.CharField(read_only=True)
-    url = CustomHyperlinkedIdentityField(view_name='vm_type-detail',
-                                         lookup_field='pk',
-                                         parent_url_kwargs=['cloud_pk'])
+    url = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:vm_type-detail',
+        lookup_field='pk',
+        parent_url_kwargs=['cloud_pk'])
     name = serializers.CharField()
     family = serializers.CharField()
     vcpus = serializers.CharField()
@@ -217,46 +227,47 @@ class VMTypeSerializer(serializers.Serializer):
 
 class AttachmentInfoSerializer(serializers.Serializer):
     device = serializers.CharField(read_only=True)
-    instance_id = ProviderPKRelatedField(label="Instance ID",
-                                         queryset='compute.instances',
-                                         display_fields=[
-                                             'name', 'id'],
-                                         display_format="{0} (ID: {1})",
-                                         required=False,
-                                         allow_null=True)
+    instance_id = ProviderPKRelatedField(
+        label="Instance ID",
+        queryset='compute.instances',
+        display_fields=['name', 'id'],
+        display_format="{0} (ID: {1})",
+        required=False,
+        allow_null=True)
 
-    instance = CustomHyperlinkedIdentityField(view_name='instance-detail',
-                                              lookup_field='instance_id',
-                                              lookup_url_kwarg='pk',
-                                              parent_url_kwargs=['cloud_pk'])
+    instance = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:instance-detail',
+        lookup_field='instance_id',
+        lookup_url_kwarg='pk',
+        parent_url_kwargs=['cloud_pk'])
 
 
 class VolumeSerializer(serializers.Serializer):
     id = serializers.CharField(read_only=True)
-    url = CustomHyperlinkedIdentityField(view_name='volume-detail',
-                                         lookup_field='id',
-                                         lookup_url_kwarg='pk',
-                                         parent_url_kwargs=['cloud_pk'])
+    url = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:volume-detail',
+        lookup_field='id',
+        lookup_url_kwarg='pk',
+        parent_url_kwargs=['cloud_pk'])
     name = serializers.CharField()
     description = serializers.CharField(allow_blank=True)
     size = serializers.IntegerField(min_value=0)
     create_time = serializers.CharField(read_only=True)
-    zone_id = PlacementZonePKRelatedField(label="Zone",
-                                          queryset='non_empty_value',
-                                          display_fields=[
-                                              'id'],
-                                          display_format="{0}",
-                                          required=True)
+    zone_id = PlacementZonePKRelatedField(
+        label="Zone",
+        queryset='non_empty_value',
+        display_fields=['id'],
+        display_format="{0}",
+        required=True)
     state = serializers.CharField(read_only=True)
-    snapshot_id = ProviderPKRelatedField(label="Snapshot ID",
-                                         queryset='storage.snapshots',
-                                         display_fields=[
-                                             'name', 'id', 'size'],
-                                         display_format="{0} (ID: {1},"
-                                         " Size: {2} GB)",
-                                         write_only=True,
-                                         required=False,
-                                         allow_null=True)
+    snapshot_id = ProviderPKRelatedField(
+        label="Snapshot ID",
+        queryset='storage.snapshots',
+        display_fields=['name', 'id', 'size'],
+        display_format="{0} (ID: {1}, Size: {2} GB)",
+        write_only=True,
+        required=False,
+        allow_null=True)
 
     attachments = AttachmentInfoSerializer()
 
@@ -285,20 +296,20 @@ class VolumeSerializer(serializers.Serializer):
 
 class SnapshotSerializer(serializers.Serializer):
     id = serializers.CharField(read_only=True)
-    url = CustomHyperlinkedIdentityField(view_name='snapshot-detail',
-                                         lookup_field='id',
-                                         lookup_url_kwarg='pk',
-                                         parent_url_kwargs=['cloud_pk'])
+    url = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:snapshot-detail',
+        lookup_field='id',
+        lookup_url_kwarg='pk',
+        parent_url_kwargs=['cloud_pk'])
     name = serializers.CharField()
     description = serializers.CharField()
     state = serializers.CharField(read_only=True)
-    volume_id = ProviderPKRelatedField(label="Volume ID",
-                                       queryset='storage.volumes',
-                                       display_fields=[
-                                             'name', 'id', 'size'],
-                                       display_format="{0} (ID: {1},"
-                                       " Size: {2} GB)",
-                                       required=True)
+    volume_id = ProviderPKRelatedField(
+        label="Volume ID",
+        queryset='storage.volumes',
+        display_fields=['name', 'id', 'size'],
+        display_format="{0} (ID: {1}, Size: {2} GB)",
+        required=True)
     create_time = serializers.CharField(read_only=True)
     size = serializers.IntegerField(min_value=0, read_only=True)
 
@@ -325,52 +336,54 @@ class SnapshotSerializer(serializers.Serializer):
 
 class InstanceSerializer(serializers.Serializer):
     id = serializers.CharField(read_only=True)
-    url = CustomHyperlinkedIdentityField(view_name='instance-detail',
-                                         lookup_field='id',
-                                         lookup_url_kwarg='pk',
-                                         parent_url_kwargs=['cloud_pk'])
+    url = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:instance-detail',
+        lookup_field='id',
+        lookup_url_kwarg='pk',
+        parent_url_kwargs=['cloud_pk'])
     name = serializers.CharField()
     public_ips = serializers.ListField(serializers.IPAddressField())
     private_ips = serializers.ListField(serializers.IPAddressField())
-    vm_type_id = ProviderPKRelatedField(label="Instance Type",
-                                        queryset='compute.vm_types',
-                                        display_fields=[
-                                            'name'],
-                                        display_format="{0}",
-                                        required=True)
+    vm_type_id = ProviderPKRelatedField(
+        label="Instance Type",
+        queryset='compute.vm_types',
+        display_fields=['name'],
+        display_format="{0}",
+        required=True)
     vm_type_url = CustomHyperlinkedIdentityField(
-        view_name='vm_type-detail',
+        view_name='djcloudbridge:vm_type-detail',
         lookup_field='vm_type_id',
         lookup_url_kwarg='pk',
         parent_url_kwargs=['cloud_pk'])
-    image_id = ProviderPKRelatedField(label="Image",
-                                      queryset='compute.images',
-                                      display_fields=[
-                                               'name', 'id'],
-                                      display_format="{0} ({1})",
-                                      required=True)
+    image_id = ProviderPKRelatedField(
+        label="Image",
+        queryset='compute.images',
+        display_fields=['name', 'id'],
+        display_format="{0} ({1})",
+        required=True)
     image_id_url = CustomHyperlinkedIdentityField(
-        view_name='machine_image-detail',
+        view_name='djcloudbridge:machine_image-detail',
         lookup_field='image_id',
         lookup_url_kwarg='pk',
         parent_url_kwargs=['cloud_pk'])
-    key_pair_name = ProviderPKRelatedField(label="Keypair Name",
-                                           queryset='security.key_pairs',
-                                           display_fields=[
-                                               'id'],
-                                           display_format="{0}",
-                                           required=True)
-    zone_id = PlacementZonePKRelatedField(label="Placement Zone",
-                                          queryset='non_empty_value',
-                                          display_fields=[
-                                              'id'],
-                                          display_format="{0}",
-                                          required=True)
-    vm_firewall_ids = ProviderPKRelatedField(label="VM Firewalls",
-                                             queryset='security.vm_firewalls',
-                                             display_fields=['name'],
-                                             display_format="{0}",
-                                             many=True)
+    key_pair_name = ProviderPKRelatedField(
+        label="Keypair Name",
+        queryset='security.key_pairs',
+        display_fields=['id'],
+        display_format="{0}",
+        required=True)
+    zone_id = PlacementZonePKRelatedField(
+        label="Placement Zone",
+        queryset='non_empty_value',
+        display_fields=['id'],
+        display_format="{0}",
+        required=True)
+    vm_firewall_ids = ProviderPKRelatedField(
+        label="VM Firewalls",
+        queryset='security.vm_firewalls',
+        display_fields=['name'],
+        display_format="{0}",
+        many=True)
     user_data = serializers.CharField(write_only=True,
                                       style={'base_template': 'textarea.html'})
 
@@ -402,15 +415,17 @@ class InstanceSerializer(serializers.Serializer):
 
 class BucketSerializer(serializers.Serializer):
     id = serializers.CharField(read_only=True)
-    url = CustomHyperlinkedIdentityField(view_name='bucket-detail',
-                                         lookup_field='id',
-                                         lookup_url_kwarg='pk',
-                                         parent_url_kwargs=['cloud_pk'])
+    url = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:bucket-detail',
+        lookup_field='id',
+        lookup_url_kwarg='pk',
+        parent_url_kwargs=['cloud_pk'])
     name = serializers.CharField()
-    objects = CustomHyperlinkedIdentityField(view_name='bucketobject-list',
-                                             lookup_field='id',
-                                             lookup_url_kwarg='bucket_pk',
-                                             parent_url_kwargs=['cloud_pk'])
+    objects = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:bucketobject-list',
+        lookup_field='id',
+        lookup_url_kwarg='bucket_pk',
+        parent_url_kwargs=['cloud_pk'])
 
     def create(self, validated_data):
         provider = view_helpers.get_cloud_provider(self.context.get('view'))
@@ -426,7 +441,7 @@ class BucketObjectSerializer(serializers.Serializer):
     size = serializers.IntegerField(read_only=True)
     last_modified = serializers.CharField(read_only=True)
     url = CustomHyperlinkedIdentityField(
-        view_name='bucketobject-detail',
+        view_name='djcloudbridge:bucketobject-detail',
         lookup_field='id',
         lookup_url_kwarg='pk',
         parent_url_kwargs=['cloud_pk', 'bucket_pk'])
@@ -437,7 +452,7 @@ class BucketObjectSerializer(serializers.Serializer):
         """Create a URL for accessing a single instance."""
         kwargs = self.context['view'].kwargs.copy()
         kwargs.update({'pk': obj.id})
-        obj_url = reverse('bucketobject-detail',
+        obj_url = reverse('djcloudbridge:bucketobject-detail',
                           kwargs=kwargs,
                           request=self.context['request'])
         return urllib.parse.urljoin(obj_url, '?format=binary')
@@ -474,21 +489,22 @@ class CloudSerializer(serializers.ModelSerializer):
         view_name='djcloudbridge:compute-list',
         lookup_field='slug',
         lookup_url_kwarg='cloud_pk')
-    security = CustomHyperlinkedIdentityField(view_name='security-list',
-                                              lookup_field='slug',
-                                              lookup_url_kwarg='cloud_pk')
-    storage = CustomHyperlinkedIdentityField(view_name='storage-list',
-                                             lookup_field='slug',
-                                             lookup_url_kwarg='cloud_pk')
-    networks = CustomHyperlinkedIdentityField(view_name='network-list',
-                                              lookup_field='slug',
-                                              lookup_url_kwarg='cloud_pk')
-    static_ips = CustomHyperlinkedIdentityField(view_name='static_ip-list',
-                                                lookup_field='slug',
-                                                lookup_url_kwarg='cloud_pk')
-    cloudman = CustomHyperlinkedIdentityField(view_name='cloudman-list',
-                                              lookup_field='slug',
-                                              lookup_url_kwarg='cloud_pk')
+    security = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:security-list',
+        lookup_field='slug',
+        lookup_url_kwarg='cloud_pk')
+    storage = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:storage-list',
+        lookup_field='slug',
+        lookup_url_kwarg='cloud_pk')
+    networks = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:network-list',
+        lookup_field='slug',
+        lookup_url_kwarg='cloud_pk')
+    static_ips = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:static_ip-list',
+        lookup_field='slug',
+        lookup_url_kwarg='cloud_pk')
     region_name = serializers.SerializerMethodField()
 
     cloud_type = serializers.SerializerMethodField()
@@ -563,32 +579,39 @@ class CloudSerializer(serializers.ModelSerializer):
 
 
 class ComputeSerializer(serializers.Serializer):
-    instances = CustomHyperlinkedIdentityField(view_name='instance-list',
-                                               parent_url_kwargs=['cloud_pk'])
-    machine_images = CustomHyperlinkedIdentityField(
-        view_name='machine_image-list',
+    instances = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:instance-list',
         parent_url_kwargs=['cloud_pk'])
-    regions = CustomHyperlinkedIdentityField(view_name='region-list',
-                                             parent_url_kwargs=['cloud_pk'])
-    vm_types = CustomHyperlinkedIdentityField(view_name='vm_type-list',
-                                              parent_url_kwargs=['cloud_pk'])
+    machine_images = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:machine_image-list',
+        parent_url_kwargs=['cloud_pk'])
+    regions = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:region-list',
+        parent_url_kwargs=['cloud_pk'])
+    vm_types = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:vm_type-list',
+        parent_url_kwargs=['cloud_pk'])
 
 
 class SecuritySerializer(serializers.Serializer):
-    keypairs = CustomHyperlinkedIdentityField(view_name='keypair-list',
-                                              parent_url_kwargs=['cloud_pk'])
+    keypairs = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:keypair-list',
+        parent_url_kwargs=['cloud_pk'])
     vm_firewalls = CustomHyperlinkedIdentityField(
-        view_name='vm_firewall-list',
+        view_name='djcloudbridge:vm_firewall-list',
         parent_url_kwargs=['cloud_pk'])
 
 
 class StorageSerializer(serializers.Serializer):
-    volumes = CustomHyperlinkedIdentityField(view_name='volume-list',
-                                             parent_url_kwargs=['cloud_pk'])
-    snapshots = CustomHyperlinkedIdentityField(view_name='snapshot-list',
-                                               parent_url_kwargs=['cloud_pk'])
-    buckets = CustomHyperlinkedIdentityField(view_name='bucket-list',
-                                             parent_url_kwargs=['cloud_pk'])
+    volumes = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:volume-list',
+        parent_url_kwargs=['cloud_pk'])
+    snapshots = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:snapshot-list',
+        parent_url_kwargs=['cloud_pk'])
+    buckets = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:bucket-list',
+        parent_url_kwargs=['cloud_pk'])
 
 
 """
@@ -597,13 +620,14 @@ User Profile and Credentials related serializers
 
 
 class CredentialsSerializer(serializers.Serializer):
-    aws = CustomHyperlinkedIdentityField(view_name='awscredentials-list')
+    aws = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:awscredentials-list')
     openstack = CustomHyperlinkedIdentityField(
-        view_name='openstackcredentials-list')
+        view_name='djcloudbridge:openstackcredentials-list')
     azure = CustomHyperlinkedIdentityField(
-        view_name='azurecredentials-list')
+        view_name='djcloudbridge:azurecredentials-list')
     gce = CustomHyperlinkedIdentityField(
-        view_name='gcecredentials-list')
+        view_name='djcloudbridge:gcecredentials-list')
 
 
 class AWSCredsSerializer(serializers.HyperlinkedModelSerializer):
@@ -684,7 +708,7 @@ class CloudConnectionAuthSerializer(serializers.Serializer):
 
 class UserSerializer(UserDetailsSerializer):
     credentials = CustomHyperlinkedIdentityField(
-        view_name='credentialsroute-list', lookup_field=None)
+        view_name='djcloudbridge:credentialsroute-list', lookup_field=None)
     aws_creds = serializers.SerializerMethodField()
     openstack_creds = serializers.SerializerMethodField()
     azure_creds = serializers.SerializerMethodField()

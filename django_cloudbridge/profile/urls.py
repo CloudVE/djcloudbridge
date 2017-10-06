@@ -2,9 +2,9 @@
 from django.conf.urls import include
 from django.conf.urls import url
 
-from . import views
+from .. import views
 
-from .drf_routers import HybridSimpleRouter
+from ..drf_routers import HybridSimpleRouter
 
 profile_router = HybridSimpleRouter()
 profile_router.register(r'credentials', views.CredentialsRouteViewSet,
