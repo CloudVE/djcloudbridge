@@ -19,10 +19,11 @@ class ZoneSerializer(serializers.Serializer):
 
 class RegionSerializer(serializers.Serializer):
     id = serializers.CharField(read_only=True)
-    url = CustomHyperlinkedIdentityField(view_name='region-detail',
-                                         lookup_field='id',
-                                         lookup_url_kwarg='pk',
-                                         parent_url_kwargs=['cloud_pk'])
+    url = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:region-detail',
+        lookup_field='id',
+        lookup_url_kwarg='pk',
+        parent_url_kwargs=['cloud_pk'])
     name = serializers.CharField()
     zones = CustomHyperlinkedIdentityField(view_name='zone-list',
                                            lookup_field='id',
@@ -469,9 +470,10 @@ class BucketObjectSerializer(serializers.Serializer):
 
 class CloudSerializer(serializers.ModelSerializer):
     slug = serializers.CharField(read_only=True)
-    compute = CustomHyperlinkedIdentityField(view_name='compute-list',
-                                             lookup_field='slug',
-                                             lookup_url_kwarg='cloud_pk')
+    compute = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:compute-list',
+        lookup_field='slug',
+        lookup_url_kwarg='cloud_pk')
     security = CustomHyperlinkedIdentityField(view_name='security-list',
                                               lookup_field='slug',
                                               lookup_url_kwarg='cloud_pk')

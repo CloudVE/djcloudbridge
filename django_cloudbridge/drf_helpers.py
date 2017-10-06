@@ -19,9 +19,10 @@ from . import view_helpers
 # ==================================
 class CustomNonModelObjectMixin(object):
     """
-    A custom viewset mixin to make it easier to work with non-django-model viewsets.
-    Only the list_objects() and retrieve_object() methods need to be implemented.
-    Create and update methods will work normally through DRF's serializers.
+    A custom viewset mixin to make it easier to work with non-django-model
+    viewsets. Only the list_objects() and retrieve_object() methods need to
+    be implemented. Create and update methods will work normally through
+    DRF's serializers.
     """
     __metaclass__ = ABCMeta
 
@@ -84,11 +85,11 @@ class CustomReadOnlySingleViewSet(CustomNonModelObjectMixin,
 class CustomHyperlinkedRelatedField(relations.HyperlinkedRelatedField):
     """
     This custom hyperlink field builds up the arguments required to link to a
-    nested view of arbitrary depth, provided the ``parent_url_kwargs`` parameter
-    is passed in. This parameter must contain a list of ``kwarg`` names that are
-    required for django's ``reverse()`` to work. The values for each argument
-    are obtained from the serializer context. It's modelled after drf-nested-
-    routers' ``NestedHyperlinkedRelatedField``.
+    nested view of arbitrary depth, provided the ``parent_url_kwargs``
+    parameter is passed in. This parameter must contain a list of ``kwarg``
+    names that are required for django's ``reverse()`` to work. The values
+    for each argument are obtained from the serializer context. It's modelled
+    after drf-nested-routers' ``NestedHyperlinkedRelatedField``.
     """
     lookup_field = 'pk'
 
@@ -96,11 +97,12 @@ class CustomHyperlinkedRelatedField(relations.HyperlinkedRelatedField):
         self.parent_url_kwargs = kwargs.pop('parent_url_kwargs', [])
         super(CustomHyperlinkedRelatedField, self).__init__(*args, **kwargs)
 
-    def get_url(self, obj, view_name, request, format):
+    def get_url(self, obj, view_name, request, content_format):
         """
         Given an object, return the URL that hyperlinks to the object.
-        May raise a ``NoReverseMatch`` if the ``view_name`` and ``lookup_field``
-        attributes are not configured to correctly match the URL conf.
+        May raise a ``NoReverseMatch`` if the ``view_name`` and
+        ``lookup_field`` attributes are not configured to correctly match the
+        URL conf.
         """
         # Unsaved objects will not yet have a valid URL.
         if hasattr(obj, 'pk') and obj.pk is None:
@@ -111,7 +113,8 @@ class CustomHyperlinkedRelatedField(relations.HyperlinkedRelatedField):
         # manually, a view may not be available. If so, the required
         # args must be supplied through the serializer context
         if 'view' in self.context:
-            reverse_kwargs = {key: val for key, val in self.context['view'].kwargs.items()
+            reverse_kwargs = {key: val for key, val in
+                              self.context['view'].kwargs.items()
                               if key in self.parent_url_kwargs}
         # Let serializer context values override view kwargs
         reverse_kwargs.update({key: val for key, val in self.context.items()
@@ -121,8 +124,8 @@ class CustomHyperlinkedRelatedField(relations.HyperlinkedRelatedField):
             if lookup_value:
                 reverse_kwargs.update({self.lookup_url_kwarg: lookup_value})
         try:
-            return self.reverse(
-                view_name, kwargs=reverse_kwargs, request=request, format=format)
+            return self.reverse(view_name, kwargs=reverse_kwargs,
+                                request=request, format=content_format)
         except NoReverseMatch as e:
             # If the reverse() failed when the lookup_value is empty, just
             # ignore, since it's probably a null value in the dataset

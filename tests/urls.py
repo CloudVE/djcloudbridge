@@ -2,10 +2,13 @@
 from __future__ import absolute_import, unicode_literals
 
 from django.conf.urls import include, url
-
-from django_cloudbridge.urls import urlpatterns as django_cloudbridge_urls
+from django.contrib import admin
 
 urlpatterns = [
-    url(r'^', include(django_cloudbridge_urls,
-                      namespace='django_cloudbridge')),
+    url(r'admin/', admin.site.urls),
+    url(r'^', include('django_cloudbridge.urls',
+                      namespace='djcloudbridge')),
+    url(r'^api-auth/', include('rest_framework.urls',
+                               namespace='rest_framework'))
+
 ]
