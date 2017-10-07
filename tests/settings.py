@@ -4,8 +4,6 @@ from __future__ import absolute_import, unicode_literals
 import os
 import sys
 
-import django
-
 DEBUG = True
 USE_TZ = True
 
@@ -41,7 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     'django.contrib.staticfiles',
     "rest_framework",
-    "django_cloudbridge",
+    "djcloudbridge",
 ]
 
 TEMPLATES = [
@@ -104,6 +102,7 @@ AUTHENTICATION_BACKENDS = [
 
 REST_FRAMEWORK = {
     'PAGE_SIZE': 50,
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication'
@@ -111,7 +110,7 @@ REST_FRAMEWORK = {
 }
 
 REST_AUTH_SERIALIZERS = {
-    'USER_DETAILS_SERIALIZER': 'django_cloudbridge.serializers.UserSerializer'
+    'USER_DETAILS_SERIALIZER': 'djcloudbridge.serializers.UserSerializer'
 }
 
 REST_SESSION_LOGIN = True

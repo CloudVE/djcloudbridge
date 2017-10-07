@@ -88,20 +88,20 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='AWS',
             fields=[
-                ('cloud_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='django_cloudbridge.Cloud')),
-                ('compute', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='django_cloudbridge.EC2')),
-                ('object_store', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='django_cloudbridge.S3')),
+                ('cloud_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='djcloudbridge.Cloud')),
+                ('compute', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='djcloudbridge.EC2')),
+                ('object_store', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='djcloudbridge.S3')),
             ],
             options={
                 'verbose_name': 'AWS',
                 'verbose_name_plural': 'AWS',
             },
-            bases=('django_cloudbridge.cloud',),
+            bases=('djcloudbridge.cloud',),
         ),
         migrations.CreateModel(
             name='AWSCredentials',
             fields=[
-                ('credentials_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='django_cloudbridge.Credentials')),
+                ('credentials_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='djcloudbridge.Credentials')),
                 ('access_key', models.CharField(max_length=50)),
                 ('secret_key', fernet_fields.fields.EncryptedCharField(max_length=50)),
             ],
@@ -109,12 +109,12 @@ class Migration(migrations.Migration):
                 'verbose_name': 'AWS Credentials',
                 'verbose_name_plural': 'AWS Credentials',
             },
-            bases=('django_cloudbridge.credentials',),
+            bases=('djcloudbridge.credentials',),
         ),
         migrations.CreateModel(
             name='Azure',
             fields=[
-                ('cloud_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='django_cloudbridge.Cloud')),
+                ('cloud_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='djcloudbridge.Cloud')),
                 ('resource_group', models.CharField(blank=True, max_length=100)),
                 ('region_name', models.CharField(blank=True, max_length=100)),
                 ('storage_account', models.CharField(blank=True, max_length=100)),
@@ -124,12 +124,12 @@ class Migration(migrations.Migration):
                 'verbose_name': 'Azure',
                 'verbose_name_plural': 'Azure',
             },
-            bases=('django_cloudbridge.cloud',),
+            bases=('djcloudbridge.cloud',),
         ),
         migrations.CreateModel(
             name='AzureCredentials',
             fields=[
-                ('credentials_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='django_cloudbridge.Credentials')),
+                ('credentials_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='djcloudbridge.Credentials')),
                 ('subscription_id', models.CharField(max_length=50)),
                 ('client_id', models.CharField(max_length=50)),
                 ('secret', fernet_fields.fields.EncryptedCharField(max_length=50)),
@@ -139,12 +139,12 @@ class Migration(migrations.Migration):
                 'verbose_name': 'Azure Credentials',
                 'verbose_name_plural': 'Azure Credentials',
             },
-            bases=('django_cloudbridge.credentials',),
+            bases=('djcloudbridge.credentials',),
         ),
         migrations.CreateModel(
             name='GCE',
             fields=[
-                ('cloud_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='django_cloudbridge.Cloud')),
+                ('cloud_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='djcloudbridge.Cloud')),
                 ('region_name', models.CharField(max_length=100)),
                 ('zone_name', models.CharField(max_length=100)),
             ],
@@ -152,24 +152,24 @@ class Migration(migrations.Migration):
                 'verbose_name': 'GCE',
                 'verbose_name_plural': 'GCE',
             },
-            bases=('django_cloudbridge.cloud',),
+            bases=('djcloudbridge.cloud',),
         ),
         migrations.CreateModel(
             name='GCECredentials',
             fields=[
-                ('credentials_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='django_cloudbridge.Credentials')),
+                ('credentials_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='djcloudbridge.Credentials')),
                 ('credentials', fernet_fields.fields.EncryptedTextField()),
             ],
             options={
                 'verbose_name': 'GCE Credentials',
                 'verbose_name_plural': 'GCE Credentials',
             },
-            bases=('django_cloudbridge.credentials',),
+            bases=('djcloudbridge.credentials',),
         ),
         migrations.CreateModel(
             name='OpenStack',
             fields=[
-                ('cloud_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='django_cloudbridge.Cloud')),
+                ('cloud_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='djcloudbridge.Cloud')),
                 ('auth_url', models.CharField(max_length=255)),
                 ('region_name', models.CharField(max_length=100)),
                 ('identity_api_version', models.CharField(blank=True, choices=[('v2.0', 'v2.0'), ('v3.0', 'v3.0')], max_length=10, null=True)),
@@ -178,12 +178,12 @@ class Migration(migrations.Migration):
                 'verbose_name': 'OpenStack',
                 'verbose_name_plural': 'OpenStack',
             },
-            bases=('django_cloudbridge.cloud',),
+            bases=('djcloudbridge.cloud',),
         ),
         migrations.CreateModel(
             name='OpenStackCredentials',
             fields=[
-                ('credentials_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='django_cloudbridge.Credentials')),
+                ('credentials_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='djcloudbridge.Credentials')),
                 ('username', models.CharField(max_length=50)),
                 ('password', fernet_fields.fields.EncryptedCharField(max_length=50)),
                 ('project_name', models.CharField(max_length=50)),
@@ -194,16 +194,16 @@ class Migration(migrations.Migration):
                 'verbose_name': 'OpenStack Credentials',
                 'verbose_name_plural': 'OpenStack Credentials',
             },
-            bases=('django_cloudbridge.credentials',),
+            bases=('djcloudbridge.credentials',),
         ),
         migrations.AddField(
             model_name='credentials',
             name='cloud',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='credentials', to='django_cloudbridge.Cloud'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='credentials', to='djcloudbridge.Cloud'),
         ),
         migrations.AddField(
             model_name='credentials',
             name='user_profile',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='credentials', to='django_cloudbridge.UserProfile'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='credentials', to='djcloudbridge.UserProfile'),
         ),
     ]

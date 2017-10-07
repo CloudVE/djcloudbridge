@@ -3,7 +3,7 @@ from django.forms import ModelForm
 from django.forms import PasswordInput
 from django.forms.models import BaseInlineFormSet
 
-from django_cloudbridge import models
+from djcloudbridge import models
 
 
 class AWSCredentialsForm(ModelForm):

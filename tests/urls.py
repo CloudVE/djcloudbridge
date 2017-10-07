@@ -6,7 +6,7 @@ from django.contrib import admin
 
 urlpatterns = [
     url(r'admin/', admin.site.urls),
-    url(r'^', include('django_cloudbridge.urls',
+    url(r'^', include('djcloudbridge.urls',
                       namespace='djcloudbridge')),
     url(r'^api-auth/', include('rest_framework.urls',
                                namespace='rest_framework'))

@@ -2,16 +2,16 @@
 # -*- coding: utf-8 -*-
 
 """
-test_django-cloudbridge
+test_djcloudbridge
 ------------
 
-Tests for `django-cloudbridge` models module.
+Tests for `djcloudbridge` models module.
 """
 
 from django.test import TestCase
 
 
-class TestDjango_cloudbridge(TestCase):
+class Test_djcloudbridge(TestCase):
 
     def setUp(self):
         pass

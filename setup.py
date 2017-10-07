@@ -11,7 +11,7 @@ except ImportError:
 
 
 def get_version(*file_paths):
-    """Retrieves the version from django_cloudbridge/__init__.py"""
+    """Retrieves the version from djcloudbridge/__init__.py"""
     filename = os.path.join(os.path.dirname(__file__), *file_paths)
     version_file = open(filename).read()
     version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]",
@@ -21,7 +21,7 @@ def get_version(*file_paths):
     raise RuntimeError('Unable to find version string.')
 
 
-version = get_version("django_cloudbridge", "__init__.py")
+version = get_version("djcloudbridge", "__init__.py")
 
 
 if sys.argv[-1] == 'publish':
@@ -67,16 +67,16 @@ REQS_DEV = ([
 
 
 setup(
-    name='django-cloudbridge',
+    name='djcloudbridge',
     version=version,
     description=("A ReSTful web api backed by cloudbridge for"
                  " interacting with cloud providers"),
     long_description=readme + '\n\n' + history,
     author='Galaxy and GVL Projects',
-    author_email='help@CloudVL.org',
-    url='https://github.com/cloudvl/django-cloudbridge',
+    author_email='help@CloudVE.org',
+    url='https://github.com/cloudve/djcloudbridge',
     packages=[
-        'django_cloudbridge',
+        'djcloudbridge',
     ],
     include_package_data=True,
     install_requires=REQS_BASE,
@@ -86,7 +86,7 @@ setup(
     },
     license="MIT",
     zip_safe=False,
-    keywords='django-cloudbridge',
+    keywords='djcloudbridge',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Framework :: Django',

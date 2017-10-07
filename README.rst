@@ -1,17 +1,17 @@
 =============================
-django-cloudbridge
+djcloudbridge
 =============================
 
-.. image:: https://img.shields.io/pypi/v/django-cloudbridge.svg
-   :target: https://pypi.python.org/pypi/django-cloudbridge.svg/
+.. image:: https://img.shields.io/pypi/v/djcloudbridge.svg
+   :target: https://pypi.python.org/pypi/djcloudbridge.svg/
    :alt: latest version available on PyPI
 
-.. image:: https://travis-ci.org/cloudvl/django-cloudbridge.svg?branch=master
-   :target: https://travis-ci.org/cloudvl/django-cloudbridge
+.. image:: https://travis-ci.org/cloudve/djcloudbridge.svg?branch=master
+   :target: https://travis-ci.org/cloudve/djcloudbridge
    :alt: Travis Build Status
 
-.. image:: https://coveralls.io/repos/github/cloudvl/django-cloudbridge/badge.svg?branch=master
-   :target: https://coveralls.io/github/cloudvl/django-cloudbridge?branch=master
+.. image:: https://coveralls.io/repos/github/cloudve/djcloudbridge/badge.svg?branch=master
+   :target: https://coveralls.io/github/cloudve/djcloudbridge?branch=master
    :alt: Test Coverage Report
 
 
@@ -20,14 +20,14 @@ A ReSTful web api backed by cloudbridge for interacting with cloud providers
 Documentation
 -------------
 
-The full documentation is at https://django-cloudbridge.readthedocs.io.
+The full documentation is at https://djcloudbridge.readthedocs.io.
 
 Quickstart
 ----------
 
-Install django-cloudbridge::
+Install djcloudbridge::
 
-    pip install django-cloudbridge
+    pip install djcloudbridge
 
 Add it to your `INSTALLED_APPS`:
 
@@ -35,20 +35,20 @@ Add it to your `INSTALLED_APPS`:
 
     INSTALLED_APPS = (
         ...
-        'django_cloudbridge.apps.DjangoCloudbridgeConfig',
+        'djcloudbridge.apps.DjangoCloudbridgeConfig',
         ...
     )
 
-Add django-cloudbridge's URL patterns:
+Add djcloudbridge's URL patterns:
 
 .. code-block:: python
 
-    from django_cloudbridge import urls as django_cloudbridge_urls
+    from djcloudbridge import urls as djcloudbridge_urls
 
 
     urlpatterns = [
         ...
-        url(r'^', include(django_cloudbridge_urls)),
+        url(r'^', include(djcloudbridge_urls)),
         ...
     ]
 
