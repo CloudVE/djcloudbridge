@@ -18,5 +18,5 @@ profile_router.register(r'credentials/gce',
                         views.GCECredentialsViewSet)
 
 urlpatterns = [
-    url(r'api/v1/auth/user/', include(profile_router.urls))
+    url(r'user/', include(profile_router.urls))
 ]
