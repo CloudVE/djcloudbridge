@@ -133,7 +133,8 @@ class Credentials(DateNameAwareModel):
         # DB level directly.
         if self.default is True:
             previous_default = Credentials.objects.filter(
-                cloud=self.cloud, default=True).select_subclasses().first()
+                cloud=self.cloud, default=True,
+                user_profile=self.user_profile).select_subclasses().first()
             if previous_default:
                 previous_default.default = False
                 previous_default.save()
