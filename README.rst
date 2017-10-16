@@ -104,10 +104,9 @@ interact with cloud resources for that provider.
     $ git clone https://github.com/cloudve/djcloudbridge.git
     $ cd djcloudbridge
     $ pip install -r requirements.txt
-    $ cd djcloudbridge
     $ python manage.py migrate
-    $ python manage.py runserver
     $ python manage.py createsuperuser
+    $ python manage.py runserver
 
 2. Visit http://127.0.0.1:8000/admin/ to define your cloud connection settings.
 

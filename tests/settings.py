@@ -114,3 +114,10 @@ REST_AUTH_SERIALIZERS = {
 }
 
 REST_SESSION_LOGIN = True
+
+# Allow settings to be overridden in a cloudlaunch/settings_local.py
+# Keep this at the bottom of this file
+try:
+    from tests.settings_local import *  # noqa
+except ImportError:
+    pass
