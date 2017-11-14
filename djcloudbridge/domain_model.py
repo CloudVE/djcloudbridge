@@ -32,14 +32,13 @@ def get_cloud_provider(cloud, cred_dict):
         return CloudProviderFactory().create_provider(ProviderList.OPENSTACK,
                                                       config)
     elif isinstance(cloud, models.AWS):
-        config = {'ec2_is_secure': cloud.compute.ec2_is_secure,
-                  'ec2_region_name': cloud.compute.ec2_region_name,
-                  'ec2_region_endpoint': cloud.compute.ec2_region_endpoint,
-                  'ec2_port': cloud.compute.ec2_port,
-                  'ec2_conn_path': cloud.compute.ec2_conn_path,
-                  's3_host': cloud.object_store.s3_host,
-                  's3_port': cloud.object_store.s3_port,
-                  's3_conn_path': cloud.object_store.s3_conn_path}
+        config = {'region_name': cloud.region_name,
+                  'ec2_is_secure': cloud.ec2_is_secure,
+                  'ec2_validate_certs': cloud.ec2_validate_certs,
+                  'ec2_endpoint_url': cloud.ec2_endpoint_url,
+                  's3_is_secure': cloud.s3_is_secure,
+                  's3_validate_certs': cloud.s3_validate_certs,
+                  's3_endpoint_url': cloud.s3_endpoint_url}
         config.update(cred_dict)
         return CloudProviderFactory().create_provider(ProviderList.AWS,
                                                       config)

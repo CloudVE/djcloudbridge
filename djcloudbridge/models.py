@@ -47,40 +47,24 @@ class Cloud(DateNameAwareModel):
 
 
 class AWS(Cloud):
-    compute = models.ForeignKey('EC2', blank=True, null=True)
-    object_store = models.ForeignKey('S3', blank=True, null=True)
+    region_name = models.CharField(max_length=100,
+                                   verbose_name="AWS region name")
+    ec2_endpoint_url = models.CharField(max_length=255,
+                                        verbose_name="EC2 endpoint url")
+    ec2_is_secure = models.BooleanField(default=True,
+                                        verbose_name="EC2 is secure")
+    ec2_validate_certs = models.BooleanField(
+        default=True, verbose_name="EC2 validate certificates")
+    s3_endpoint_url = models.CharField(max_length=255,
+                                       verbose_name="S3 endpoint url")
+    s3_is_secure = models.BooleanField(default=True,
+                                       verbose_name="S3 is secure")
+    s3_validate_certs = models.BooleanField(
+        default=True, verbose_name="S3 validate certificates")
 
     class Meta:
         verbose_name = "AWS"
         verbose_name_plural = "AWS"
-
-
-class EC2(DateNameAwareModel):
-    ec2_region_name = models.CharField(max_length=100,
-                                       verbose_name="EC2 region name")
-    ec2_region_endpoint = models.CharField(
-        max_length=255, verbose_name="EC2 region endpoint")
-    ec2_conn_path = models.CharField(max_length=255, default='/',
-                                     verbose_name="EC2 conn path")
-    ec2_is_secure = models.BooleanField(default=True,
-                                        verbose_name="EC2 is secure")
-    ec2_port = models.IntegerField(blank=True, null=True,
-                                   verbose_name="EC2 port")
-
-    class Meta:
-        verbose_name = "EC2"
-        verbose_name_plural = "EC2"
-
-
-class S3(DateNameAwareModel):
-    s3_host = models.CharField(max_length=255, blank=True, null=True)
-    s3_conn_path = models.CharField(max_length=255, default='/', blank=True,
-                                    null=True)
-    s3_is_secure = models.BooleanField(default=True)
-    s3_port = models.IntegerField(blank=True, null=True)
-
-    class Meta:
-        verbose_name_plural = "S3"
 
 
 class OpenStack(Cloud):
