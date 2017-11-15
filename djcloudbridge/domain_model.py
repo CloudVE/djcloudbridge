@@ -32,7 +32,7 @@ def get_cloud_provider(cloud, cred_dict):
         return CloudProviderFactory().create_provider(ProviderList.OPENSTACK,
                                                       config)
     elif isinstance(cloud, models.AWS):
-        config = {'region_name': cloud.region_name,
+        config = {'aws_region_name': cloud.region_name,
                   'ec2_is_secure': cloud.ec2_is_secure,
                   'ec2_validate_certs': cloud.ec2_validate_certs,
                   'ec2_endpoint_url': cloud.ec2_endpoint_url,
