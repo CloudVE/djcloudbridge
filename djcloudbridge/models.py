@@ -124,6 +124,13 @@ class Credentials(DateNameAwareModel):
                 previous_default.save()
         return super(Credentials, self).save()
 
+    def as_dict(self):
+        return {'id': self.id,
+                'name': self.name,
+                'default': self.default,
+                'cloud_id': self.cloud_id
+                }
+
 
 class AWSCredentials(Credentials):
     access_key = models.CharField(max_length=50, blank=False, null=False)
@@ -134,9 +141,9 @@ class AWSCredentials(Credentials):
         verbose_name_plural = "AWS Credentials"
 
     def as_dict(self):
-        return {'aws_access_key': self.access_key,
-                'aws_secret_key': self.secret_key
-                }
+        d = super(AWSCredentials, self).as_dict()
+        d['aws_access_key'] = self.access_key,
+        d['aws_secret_key'] = self.secret_key
 
 
 class OpenStackCredentials(Credentials):
@@ -152,7 +159,9 @@ class OpenStackCredentials(Credentials):
         verbose_name_plural = "OpenStack Credentials"
 
     def as_dict(self):
-        d = {'os_username': self.username, 'os_password': self.password}
+        d = super(OpenStackCredentials, self).as_dict()
+        d['os_username'] = self.username
+        d['os_password'] = self.password
         if self.project_name:
             d['os_project_name'] = self.project_name
         if self.project_domain_name:
@@ -180,7 +189,11 @@ class GCECredentials(Credentials):
         verbose_name_plural = "GCE Credentials"
 
     def as_dict(self):
-        return json.loads(self.credentials)
+        d = super(GCECredentials, self).as_dict()
+        gce_creds = json.loads(self.credentials)
+        # Overwrite with super values in case gce_creds also has an id property
+        gce_creds.update(d)
+        return d
 
 
 class AzureCredentials(Credentials):
@@ -194,11 +207,11 @@ class AzureCredentials(Credentials):
         verbose_name_plural = "Azure Credentials"
 
     def as_dict(self):
-        d = {'azure_subscription_id': self.subscription_id,
-             'azure_client_id': self.client_id,
-             'azure_secret': self.secret,
-             'azure_tenant': self.tenant
-             }
+        d = super(AzureCredentials, self).as_dict()
+        d['azure_subscription_id'] = self.subscription_id
+        d['azure_client_id'] = self.client_id
+        d['azure_secret'] = self.secret
+        d['azure_tenant'] = self.tenant
         return d
 
 
