@@ -33,6 +33,15 @@ cloud_router.register(r'security/keypairs', views.KeyPairViewSet,
 cloud_router.register(r'security/vm_firewalls', views.VMFirewallViewSet,
                       base_name='vm_firewall')
 
+cloud_router.register(r'networking', views.NetworkingViewSet,
+                      base_name='networking')
+cloud_router.register(r'networking/networks', views.NetworkViewSet,
+                      base_name='network')
+cloud_router.register(r'networking/gateways', views.GatewayViewSet,
+                      base_name='gateway')
+cloud_router.register(r'networking/routers', views.RouterViewSet,
+                      base_name='router')
+
 cloud_router.register(r'storage', views.StorageViewSet,
                       base_name='storage')
 cloud_router.register(r'storage/volumes', views.VolumeViewSet,
@@ -42,10 +51,6 @@ cloud_router.register(r'storage/snapshots', views.SnapshotViewSet,
 cloud_router.register(r'storage/buckets', views.BucketViewSet,
                       base_name='bucket')
 
-cloud_router.register(r'networks', views.NetworkViewSet, base_name='network')
-
-cloud_router.register(r'static_ips', views.StaticIPViewSet,
-                      base_name='static_ip')
 
 region_router = HybridNestedRouter(cloud_router, r'compute/regions',
                                    lookup='region')
@@ -58,9 +63,14 @@ vm_firewall_router = HybridNestedRouter(cloud_router,
 vm_firewall_router.register(r'rules', views.VMFirewallRuleViewSet,
                             base_name='vm_firewall_rule')
 
-network_router = HybridNestedRouter(cloud_router, r'networks',
+network_router = HybridNestedRouter(cloud_router, r'networking/networks',
                                     lookup='network')
 network_router.register(r'subnets', views.SubnetViewSet, base_name='subnet')
+
+gateway_router = HybridNestedRouter(cloud_router, r'networking/gateways',
+                                    lookup='gateway')
+gateway_router.register(r'floating_ips', views.FloatingIPViewSet,
+                        base_name='floating_ip')
 
 bucket_router = HybridNestedRouter(cloud_router, r'storage/buckets',
                                    lookup='bucket')
@@ -77,5 +87,6 @@ urlpatterns = [
     url(infrastructure_regex_pattern, include(region_router.urls)),
     url(infrastructure_regex_pattern, include(vm_firewall_router.urls)),
     url(infrastructure_regex_pattern, include(network_router.urls)),
+    url(infrastructure_regex_pattern, include(gateway_router.urls)),
     url(infrastructure_regex_pattern, include(bucket_router.urls)),
 ]

@@ -181,6 +181,14 @@ class VMFirewallRuleViewSet(drf_helpers.CustomModelViewSet):
             raise Http404
 
 
+class NetworkingViewSet(drf_helpers.CustomReadOnlySingleViewSet):
+    """
+    List networking related urls.
+    """
+    permission_classes = (IsAuthenticated,)
+    serializer_class = serializers.NetworkingSerializer
+
+
 class NetworkViewSet(drf_helpers.CustomModelViewSet):
     """
     List networks in a given cloud.
@@ -220,17 +228,57 @@ class SubnetViewSet(drf_helpers.CustomModelViewSet):
         return serializers.SubnetSerializer
 
 
-class StaticIPViewSet(drf_helpers.CustomModelViewSet):
+class GatewayViewSet(drf_helpers.CustomModelViewSet):
     """
-    List user's static IP addresses.
+    List internet gateways in a given cloud.
     """
     permission_classes = (IsAuthenticated,)
-    serializer_class = serializers.StaticIPSerializer
+    # Required for the Browsable API renderer to have a nice form.
+    serializer_class = serializers.GatewaySerializer
+
+    def list_objects(self):
+        provider = view_helpers.get_cloud_provider(self)
+        return provider.networking.gateways.list()
+
+    # def get_object(self):
+    #     provider = view_helpers.get_cloud_provider(self)
+    #     obj = provider.networking.gateways.get_or_create_inet_gateway(
+    #         network=self.kwargs["network_pk"])
+    #     return obj
+
+
+class RouterViewSet(drf_helpers.CustomModelViewSet):
+    """
+    List routers in a given cloud.
+    """
+    permission_classes = (IsAuthenticated,)
+    # Required for the Browsable API renderer to have a nice form.
+    serializer_class = serializers.RouterSerializer
+
+    def list_objects(self):
+        provider = view_helpers.get_cloud_provider(self)
+        return provider.networking.routers.list()
+
+    def get_object(self):
+        provider = view_helpers.get_cloud_provider(self)
+        obj = provider.networking.routers.get(self.kwargs["pk"])
+        return obj
+
+
+class FloatingIPViewSet(drf_helpers.CustomModelViewSet):
+    """
+    List user's floating IP addresses.
+    """
+    permission_classes = (IsAuthenticated,)
+    serializer_class = serializers.FloatingIPSerializer
 
     def list_objects(self):
         provider = view_helpers.get_cloud_provider(self)
         ips = []
-        for ip in provider.networking.floating_ips.list():
+        gateway = provider.networking.gateways.get_or_create_inet_gateway(
+            network=self.kwargs['network_pk']
+        )
+        for ip in gateway.floating_ips.list():
             if not ip.in_use:
                 ips.append({'ip': ip.public_ip})
         return ips

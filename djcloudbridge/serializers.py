@@ -144,6 +144,18 @@ class VMFirewallSerializer(serializers.Serializer):
             validated_data.get('network_id').id)
 
 
+class NetworkingSerializer(serializers.Serializer):
+    networks = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:network-list',
+        parent_url_kwargs=['cloud_pk'])
+    gateways = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:gateway-list',
+        parent_url_kwargs=['cloud_pk'])
+    routers = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:router-list',
+        parent_url_kwargs=['cloud_pk'])
+
+
 class NetworkSerializer(serializers.Serializer):
     id = serializers.CharField(read_only=True)
     url = CustomHyperlinkedIdentityField(
@@ -204,7 +216,62 @@ class SubnetSerializerUpdate(SubnetSerializer):
             raise serializers.ValidationError("{0}".format(e))
 
 
-class StaticIPSerializer(serializers.Serializer):
+class RouterSerializer(serializers.Serializer):
+    id = serializers.CharField(read_only=True)
+    url = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:router-detail',
+        lookup_field='id',
+        lookup_url_kwarg='pk',
+        parent_url_kwargs=['cloud_pk'])
+    name = serializers.CharField()
+    state = serializers.CharField(read_only=True)
+    network_id = ProviderPKRelatedField(
+        queryset='networking.networks',
+        display_fields=['id', 'name'],
+        display_format="{1} ({0})")
+
+    def create(self, validated_data):
+        provider = view_helpers.get_cloud_provider(self.context.get('view'))
+        return provider.networking.routers.create(
+            network=validated_data.get('network_id').id,
+            name=validated_data.get('name'))
+
+    def update(self, instance, validated_data):
+        try:
+            if instance.name != validated_data.get('name'):
+                instance.name = validated_data.get('name')
+            return instance
+        except Exception as e:
+            raise serializers.ValidationError("{0}".format(e))
+
+
+class GatewaySerializer(serializers.Serializer):
+    id = serializers.CharField(read_only=True)
+    url = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:gateway-detail',
+        lookup_field='id',
+        lookup_url_kwarg='pk',
+        parent_url_kwargs=['cloud_pk'])
+    name = serializers.CharField()
+    state = serializers.CharField(read_only=True)
+    network_id = ProviderPKRelatedField(
+        queryset='networking.networks',
+        display_fields=['id', 'name'],
+        display_format="{1} ({0})")
+    floating_ips = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:floating_ip-list',
+        lookup_field='id',
+        lookup_url_kwarg='gateway_pk',
+        parent_url_kwargs=['cloud_pk'])
+
+    def create(self, validated_data):
+        provider = view_helpers.get_cloud_provider(self.context.get('view'))
+        return provider.networking.gateways.get_or_create_inet_gateway(
+            network=validated_data.get('network_id').id,
+            name=validated_data.get('name'))
+
+
+class FloatingIPSerializer(serializers.Serializer):
     ip = serializers.CharField(read_only=True)
 
 
@@ -497,22 +564,17 @@ class CloudSerializer(serializers.ModelSerializer):
         view_name='djcloudbridge:storage-list',
         lookup_field='slug',
         lookup_url_kwarg='cloud_pk')
-    networks = CustomHyperlinkedIdentityField(
-        view_name='djcloudbridge:network-list',
-        lookup_field='slug',
-        lookup_url_kwarg='cloud_pk')
-    static_ips = CustomHyperlinkedIdentityField(
-        view_name='djcloudbridge:static_ip-list',
+    networking = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:networking-list',
         lookup_field='slug',
         lookup_url_kwarg='cloud_pk')
     region_name = serializers.SerializerMethodField()
-
     cloud_type = serializers.SerializerMethodField()
     extra_data = serializers.SerializerMethodField()
 
     def get_region_name(self, obj):
         if hasattr(obj, 'aws'):
-            return obj.aws.compute.ec2_region_name
+            return obj.aws.region_name
         elif hasattr(obj, 'openstack'):
             return obj.openstack.region_name
         elif hasattr(obj, 'azure'):
@@ -538,19 +600,13 @@ class CloudSerializer(serializers.ModelSerializer):
         if hasattr(obj, 'aws'):
             aws = obj.aws
             extra_data = {}
-            if aws.compute:
-                compute = aws.compute
-                extra_data['ec2_region_name'] = compute.ec2_region_name
-                extra_data['ec2_region_endpoint'] = compute.ec2_region_endpoint
-                extra_data['ec2_conn_path'] = compute.ec2_conn_path
-                extra_data['ec2_port'] = compute.ec2_port
-                extra_data['ec2_is_secure'] = compute.ec2_is_secure
-            if aws.object_store:
-                s3 = aws.object_store
-                extra_data['s3_host'] = s3.s3_host
-                extra_data['s3_conn_path'] = s3.s3_conn_path
-                extra_data['s3_port'] = s3.s3_port
-                extra_data['s3_is_secure'] = s3.s3_is_secure
+            extra_data['ec2_region_name'] = aws.region_name
+            extra_data['ec2_region_endpoint'] = aws.ec2_endpoint_url
+            extra_data['ec2_is_secure'] = aws.ec2_is_secure
+            extra_data['ec2_validate_certs'] = aws.ec2_validate_certs
+            extra_data['s3_endpoint_url'] = aws.s3_endpoint_url
+            extra_data['s3_validate_certs'] = aws.s3_validate_certs
+            extra_data['s3_is_secure'] = aws.s3_is_secure
             return extra_data
         elif hasattr(obj, 'openstack'):
             os = obj.openstack
