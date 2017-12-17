@@ -91,11 +91,7 @@ class GCE(Cloud):
 
 
 class Azure(Cloud):
-    resource_group = models.CharField(max_length=100, blank=True, null=False)
     region_name = models.CharField(max_length=100, blank=True, null=False)
-    storage_account = models.CharField(max_length=100, blank=True, null=False)
-    vm_default_user_name = models.CharField(max_length=100, blank=True,
-                                            null=False)
 
     class Meta:
         verbose_name = "Azure"
@@ -201,6 +197,12 @@ class AzureCredentials(Credentials):
     client_id = models.CharField(max_length=50, blank=False, null=False)
     secret = EncryptedCharField(max_length=50, blank=False, null=False)
     tenant = models.CharField(max_length=50, blank=True, null=True)
+    resource_group = models.CharField(max_length=64, blank=False, null=False,
+                                      default='cloudbridge')
+    storage_account = models.CharField(max_length=24, blank=False, null=False,
+                                       default='cbstorage')
+    vm_default_username = models.CharField(max_length=100, blank=False,
+                                           null=False, default='cbuser')
 
     class Meta:
         verbose_name = "Azure Credential"
@@ -212,6 +214,9 @@ class AzureCredentials(Credentials):
         d['azure_client_id'] = self.client_id
         d['azure_secret'] = self.secret
         d['azure_tenant'] = self.tenant
+        d['azure_resource_group'] = self.resource_group
+        d['azure_storage_account'] = self.storage_account
+        d['azure_vm_default_username'] = self.vm_default_username
         return d
 
 

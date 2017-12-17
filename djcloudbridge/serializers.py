@@ -553,11 +553,7 @@ class CloudSerializer(serializers.ModelSerializer):
                     }
         elif hasattr(obj, 'azure'):
             azure = obj.azure
-            return {'region_name': azure.region_name,
-                    'resource_group': azure.resource_group,
-                    'storage_account': azure.storage_account,
-                    'vm_default_user_name': azure.vm_default_user_name
-                    }
+            return {'region_name': azure.region_name}
         elif hasattr(obj, 'gce'):
             gce = obj.gce
             return {'region_name': gce.region_name,
