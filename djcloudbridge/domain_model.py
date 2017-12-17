@@ -43,10 +43,7 @@ def get_cloud_provider(cloud, cred_dict):
         return CloudProviderFactory().create_provider(ProviderList.AWS,
                                                       config)
     elif isinstance(cloud, models.Azure):
-        config = {'azure_region_name': cloud.region_name,
-                  'azure_resource_group': cloud.resource_group,
-                  'azure_storage_account': cloud.storage_account,
-                  'azure_vm_default_user_name': cloud.vm_default_user_name}
+        config = {'azure_region_name': cloud.region_name}
         config.update(cred_dict)
         return CloudProviderFactory().create_provider(ProviderList.AZURE,
                                                       config)
