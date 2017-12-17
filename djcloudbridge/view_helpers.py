@@ -116,7 +116,7 @@ def get_credentials_by_id(cloud, request, credentials_id):
     current user's profile. If the user is not logged in or no credentials
     are found, returns an empty dict.
     """
-    if request.user.is_anonymous():
+    if request.user.is_anonymous:
         return {}
     profile = request.user.userprofile
 
@@ -139,7 +139,7 @@ def get_credentials_from_profile(cloud, request):
     variables required by Cloudbridge available, those credentials will
     be used!
     """
-    if request.user.is_anonymous():
+    if request.user.is_anonymous:
         return {}
     profile = request.user.userprofile
 

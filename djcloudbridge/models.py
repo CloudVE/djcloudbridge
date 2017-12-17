@@ -102,9 +102,11 @@ class Credentials(DateNameAwareModel):
     default = models.BooleanField(
         help_text="If set, use as default credentials for the selected cloud",
         blank=True, default=False)
-    cloud = models.ForeignKey('Cloud', related_name='credentials')
+    cloud = models.ForeignKey('Cloud', models.CASCADE,
+                              related_name='credentials')
     objects = InheritanceManager()
-    user_profile = models.ForeignKey('UserProfile', related_name='credentials')
+    user_profile = models.ForeignKey('UserProfile', models.CASCADE,
+                                     related_name='credentials')
 
     def save(self, *args, **kwargs):
         # Ensure only 1 set of credentials is selected as the 'default' for
@@ -222,7 +224,7 @@ class AzureCredentials(Credentials):
 
 class UserProfile(models.Model):
     # Link UserProfile to a User model instance
-    user = models.OneToOneField(User)
+    user = models.OneToOneField(User, models.CASCADE)
     slug = models.SlugField(unique=True, primary_key=True, editable=False)
 
     class Meta:
