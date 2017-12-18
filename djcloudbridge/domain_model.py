@@ -28,7 +28,7 @@ def get_cloud_provider(cloud, cred_dict):
     if isinstance(cloud, models.OpenStack):
         config = {'os_auth_url': cloud.auth_url,
                   'os_region_name': cloud.region_name}
-        config.update(cred_dict)
+        config.update(cred_dict or {})
         return CloudProviderFactory().create_provider(ProviderList.OPENSTACK,
                                                       config)
     elif isinstance(cloud, models.AWS):
@@ -39,18 +39,19 @@ def get_cloud_provider(cloud, cred_dict):
                   's3_is_secure': cloud.s3_is_secure,
                   's3_validate_certs': cloud.s3_validate_certs,
                   's3_endpoint_url': cloud.s3_endpoint_url}
-        config.update(cred_dict)
+        config.update(cred_dict or {})
         return CloudProviderFactory().create_provider(ProviderList.AWS,
                                                       config)
     elif isinstance(cloud, models.Azure):
         config = {'azure_region_name': cloud.region_name}
-        config.update(cred_dict)
+        config.update(cred_dict or {})
         return CloudProviderFactory().create_provider(ProviderList.AZURE,
                                                       config)
     elif isinstance(cloud, models.GCE):
         config = {'gce_service_creds_dict': cred_dict,
                   'gce_default_zone': cloud.zone_name,
                   'gce_region_name': cloud.region_name}
+        config.update(cred_dict or {})
         return CloudProviderFactory().create_provider(ProviderList.GCE,
                                                       config)
     else:
