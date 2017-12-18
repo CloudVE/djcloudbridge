@@ -2,7 +2,7 @@ from abc import ABCMeta, abstractmethod
 
 from cloudbridge.cloud.interfaces.resources import CloudResource
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.urlresolvers import NoReverseMatch
+from django.urls import NoReverseMatch
 from django.http.response import Http404
 from rest_framework import mixins
 from rest_framework import relations

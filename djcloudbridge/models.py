@@ -47,40 +47,24 @@ class Cloud(DateNameAwareModel):
 
 
 class AWS(Cloud):
-    compute = models.ForeignKey('EC2', blank=True, null=True)
-    object_store = models.ForeignKey('S3', blank=True, null=True)
+    region_name = models.CharField(max_length=100,
+                                   verbose_name="AWS region name")
+    ec2_endpoint_url = models.CharField(max_length=255,
+                                        verbose_name="EC2 endpoint url")
+    ec2_is_secure = models.BooleanField(default=True,
+                                        verbose_name="EC2 is secure")
+    ec2_validate_certs = models.BooleanField(
+        default=True, verbose_name="EC2 validate certificates")
+    s3_endpoint_url = models.CharField(max_length=255,
+                                       verbose_name="S3 endpoint url")
+    s3_is_secure = models.BooleanField(default=True,
+                                       verbose_name="S3 is secure")
+    s3_validate_certs = models.BooleanField(
+        default=True, verbose_name="S3 validate certificates")
 
     class Meta:
         verbose_name = "AWS"
         verbose_name_plural = "AWS"
-
-
-class EC2(DateNameAwareModel):
-    ec2_region_name = models.CharField(max_length=100,
-                                       verbose_name="EC2 region name")
-    ec2_region_endpoint = models.CharField(
-        max_length=255, verbose_name="EC2 region endpoint")
-    ec2_conn_path = models.CharField(max_length=255, default='/',
-                                     verbose_name="EC2 conn path")
-    ec2_is_secure = models.BooleanField(default=True,
-                                        verbose_name="EC2 is secure")
-    ec2_port = models.IntegerField(blank=True, null=True,
-                                   verbose_name="EC2 port")
-
-    class Meta:
-        verbose_name = "EC2"
-        verbose_name_plural = "EC2"
-
-
-class S3(DateNameAwareModel):
-    s3_host = models.CharField(max_length=255, blank=True, null=True)
-    s3_conn_path = models.CharField(max_length=255, default='/', blank=True,
-                                    null=True)
-    s3_is_secure = models.BooleanField(default=True)
-    s3_port = models.IntegerField(blank=True, null=True)
-
-    class Meta:
-        verbose_name_plural = "S3"
 
 
 class OpenStack(Cloud):
@@ -107,11 +91,7 @@ class GCE(Cloud):
 
 
 class Azure(Cloud):
-    resource_group = models.CharField(max_length=100, blank=True, null=False)
     region_name = models.CharField(max_length=100, blank=True, null=False)
-    storage_account = models.CharField(max_length=100, blank=True, null=False)
-    vm_default_user_name = models.CharField(max_length=100, blank=True,
-                                            null=False)
 
     class Meta:
         verbose_name = "Azure"
@@ -122,9 +102,11 @@ class Credentials(DateNameAwareModel):
     default = models.BooleanField(
         help_text="If set, use as default credentials for the selected cloud",
         blank=True, default=False)
-    cloud = models.ForeignKey('Cloud', related_name='credentials')
+    cloud = models.ForeignKey('Cloud', models.CASCADE,
+                              related_name='credentials')
     objects = InheritanceManager()
-    user_profile = models.ForeignKey('UserProfile', related_name='credentials')
+    user_profile = models.ForeignKey('UserProfile', models.CASCADE,
+                                     related_name='credentials')
 
     def save(self, *args, **kwargs):
         # Ensure only 1 set of credentials is selected as the 'default' for
@@ -140,6 +122,13 @@ class Credentials(DateNameAwareModel):
                 previous_default.save()
         return super(Credentials, self).save()
 
+    def as_dict(self):
+        return {'id': self.id,
+                'name': self.name,
+                'default': self.default,
+                'cloud_id': self.cloud_id
+                }
+
 
 class AWSCredentials(Credentials):
     access_key = models.CharField(max_length=50, blank=False, null=False)
@@ -150,9 +139,9 @@ class AWSCredentials(Credentials):
         verbose_name_plural = "AWS Credentials"
 
     def as_dict(self):
-        return {'aws_access_key': self.access_key,
-                'aws_secret_key': self.secret_key
-                }
+        d = super(AWSCredentials, self).as_dict()
+        d['aws_access_key'] = self.access_key,
+        d['aws_secret_key'] = self.secret_key
 
 
 class OpenStackCredentials(Credentials):
@@ -168,7 +157,9 @@ class OpenStackCredentials(Credentials):
         verbose_name_plural = "OpenStack Credentials"
 
     def as_dict(self):
-        d = {'os_username': self.username, 'os_password': self.password}
+        d = super(OpenStackCredentials, self).as_dict()
+        d['os_username'] = self.username
+        d['os_password'] = self.password
         if self.project_name:
             d['os_project_name'] = self.project_name
         if self.project_domain_name:
@@ -196,7 +187,11 @@ class GCECredentials(Credentials):
         verbose_name_plural = "GCE Credentials"
 
     def as_dict(self):
-        return json.loads(self.credentials)
+        d = super(GCECredentials, self).as_dict()
+        gce_creds = json.loads(self.credentials)
+        # Overwrite with super values in case gce_creds also has an id property
+        gce_creds.update(d)
+        return d
 
 
 class AzureCredentials(Credentials):
@@ -204,23 +199,32 @@ class AzureCredentials(Credentials):
     client_id = models.CharField(max_length=50, blank=False, null=False)
     secret = EncryptedCharField(max_length=50, blank=False, null=False)
     tenant = models.CharField(max_length=50, blank=True, null=True)
+    resource_group = models.CharField(max_length=64, blank=False, null=False,
+                                      default='cloudbridge')
+    storage_account = models.CharField(max_length=24, blank=False, null=False,
+                                       default='cbstorage')
+    vm_default_username = models.CharField(max_length=100, blank=False,
+                                           null=False, default='cbuser')
 
     class Meta:
         verbose_name = "Azure Credential"
         verbose_name_plural = "Azure Credentials"
 
     def as_dict(self):
-        d = {'azure_subscription_id': self.subscription_id,
-             'azure_client_id': self.client_id,
-             'azure_secret': self.secret,
-             'azure_tenant': self.tenant
-             }
+        d = super(AzureCredentials, self).as_dict()
+        d['azure_subscription_id'] = self.subscription_id
+        d['azure_client_id'] = self.client_id
+        d['azure_secret'] = self.secret
+        d['azure_tenant'] = self.tenant
+        d['azure_resource_group'] = self.resource_group
+        d['azure_storage_account'] = self.storage_account
+        d['azure_vm_default_username'] = self.vm_default_username
         return d
 
 
 class UserProfile(models.Model):
     # Link UserProfile to a User model instance
-    user = models.OneToOneField(User)
+    user = models.OneToOneField(User, models.CASCADE)
     slug = models.SlugField(unique=True, primary_key=True, editable=False)
 
     class Meta:

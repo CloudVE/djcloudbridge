@@ -81,13 +81,21 @@ def get_credentials_from_request(cloud, request):
         azure_client_id = request.META.get('HTTP_CL_AZURE_CLIENT_ID')
         azure_secret = request.META.get('HTTP_CL_AZURE_SECRET')
         azure_tenant = request.META.get('HTTP_CL_AZURE_TENANT')
+        azure_resource_group = request.META.get('HTTP_CL_AZURE_RESOURCE_GROUP')
+        azure_storage_account = request.META.get(
+            'HTTP_CL_AZURE_STORAGE_ACCOUNT')
+        azure_vm_default_username = request.META.get(
+            'HTTP_CL_AZURE_VM_DEFAULT_USERNAME')
 
         if (azure_subscription_id and azure_client_id and azure_secret and
                 azure_tenant):
             return {'azure_subscription_id': azure_subscription_id,
                     'azure_client_id': azure_client_id,
                     'azure_secret': azure_secret,
-                    'azure_tenant': azure_tenant
+                    'azure_tenant': azure_tenant,
+                    'azure_resource_group': azure_resource_group,
+                    'azure_storage_account': azure_storage_account,
+                    'azure_vm_default_username': azure_vm_default_username
                     }
         else:
             return {}
@@ -108,7 +116,7 @@ def get_credentials_by_id(cloud, request, credentials_id):
     current user's profile. If the user is not logged in or no credentials
     are found, returns an empty dict.
     """
-    if request.user.is_anonymous():
+    if request.user.is_anonymous:
         return {}
     profile = request.user.userprofile
 
@@ -131,7 +139,7 @@ def get_credentials_from_profile(cloud, request):
     variables required by Cloudbridge available, those credentials will
     be used!
     """
-    if request.user.is_anonymous():
+    if request.user.is_anonymous:
         return {}
     profile = request.user.userprofile
 

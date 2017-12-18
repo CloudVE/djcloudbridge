@@ -28,33 +28,30 @@ def get_cloud_provider(cloud, cred_dict):
     if isinstance(cloud, models.OpenStack):
         config = {'os_auth_url': cloud.auth_url,
                   'os_region_name': cloud.region_name}
-        config.update(cred_dict)
+        config.update(cred_dict or {})
         return CloudProviderFactory().create_provider(ProviderList.OPENSTACK,
                                                       config)
     elif isinstance(cloud, models.AWS):
-        config = {'ec2_is_secure': cloud.compute.ec2_is_secure,
-                  'ec2_region_name': cloud.compute.ec2_region_name,
-                  'ec2_region_endpoint': cloud.compute.ec2_region_endpoint,
-                  'ec2_port': cloud.compute.ec2_port,
-                  'ec2_conn_path': cloud.compute.ec2_conn_path,
-                  's3_host': cloud.object_store.s3_host,
-                  's3_port': cloud.object_store.s3_port,
-                  's3_conn_path': cloud.object_store.s3_conn_path}
-        config.update(cred_dict)
+        config = {'aws_region_name': cloud.region_name,
+                  'ec2_is_secure': cloud.ec2_is_secure,
+                  'ec2_validate_certs': cloud.ec2_validate_certs,
+                  'ec2_endpoint_url': cloud.ec2_endpoint_url,
+                  's3_is_secure': cloud.s3_is_secure,
+                  's3_validate_certs': cloud.s3_validate_certs,
+                  's3_endpoint_url': cloud.s3_endpoint_url}
+        config.update(cred_dict or {})
         return CloudProviderFactory().create_provider(ProviderList.AWS,
                                                       config)
     elif isinstance(cloud, models.Azure):
-        config = {'azure_region_name': cloud.region_name,
-                  'azure_resource_group': cloud.resource_group,
-                  'azure_storage_account': cloud.storage_account,
-                  'azure_vm_default_user_name': cloud.vm_default_user_name}
-        config.update(cred_dict)
+        config = {'azure_region_name': cloud.region_name}
+        config.update(cred_dict or {})
         return CloudProviderFactory().create_provider(ProviderList.AZURE,
                                                       config)
     elif isinstance(cloud, models.GCE):
         config = {'gce_service_creds_dict': cred_dict,
                   'gce_default_zone': cloud.zone_name,
                   'gce_region_name': cloud.region_name}
+        config.update(cred_dict or {})
         return CloudProviderFactory().create_provider(ProviderList.GCE,
                                                       config)
     else:

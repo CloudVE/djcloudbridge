@@ -599,15 +599,14 @@ class CloudSerializer(serializers.ModelSerializer):
     def get_extra_data(self, obj):
         if hasattr(obj, 'aws'):
             aws = obj.aws
-            extra_data = {}
-            extra_data['ec2_region_name'] = aws.region_name
-            extra_data['ec2_region_endpoint'] = aws.ec2_endpoint_url
-            extra_data['ec2_is_secure'] = aws.ec2_is_secure
-            extra_data['ec2_validate_certs'] = aws.ec2_validate_certs
-            extra_data['s3_endpoint_url'] = aws.s3_endpoint_url
-            extra_data['s3_validate_certs'] = aws.s3_validate_certs
-            extra_data['s3_is_secure'] = aws.s3_is_secure
-            return extra_data
+            return {'region_name': aws.region_name,
+                    'ec2_endpoint_url': aws.ec2_endpoint_url,
+                    'ec2_is_secure': aws.ec2_is_secure,
+                    'ec2_validate_certs': aws.ec2_validate_certs,
+                    's3_endpoint_url': aws.s3_endpoint_url,
+                    's3_is_secure': aws.s3_is_secure,
+                    's3_validate_certs': aws.s3_validate_certs
+                    }
         elif hasattr(obj, 'openstack'):
             os = obj.openstack
             return {'auth_url': os.auth_url,
@@ -616,11 +615,7 @@ class CloudSerializer(serializers.ModelSerializer):
                     }
         elif hasattr(obj, 'azure'):
             azure = obj.azure
-            return {'region_name': azure.region_name,
-                    'resource_group': azure.resource_group,
-                    'storage_account': azure.storage_account,
-                    'vm_default_user_name': azure.vm_default_user_name
-                    }
+            return {'region_name': azure.region_name}
         elif hasattr(obj, 'gce'):
             gce = obj.gce
             return {'region_name': gce.region_name,
