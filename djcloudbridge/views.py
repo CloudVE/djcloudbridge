@@ -238,13 +238,14 @@ class GatewayViewSet(drf_helpers.CustomModelViewSet):
 
     def list_objects(self):
         provider = view_helpers.get_cloud_provider(self)
-        return provider.networking.gateways.list()
+        net = provider.networking.networks.get(self.kwargs['network_pk'])
+        return net.gateways.list()
 
-    # def get_object(self):
-    #     provider = view_helpers.get_cloud_provider(self)
-    #     obj = provider.networking.gateways.get_or_create_inet_gateway(
-    #         network=self.kwargs["network_pk"])
-    #     return obj
+    def get_object(self):
+        provider = view_helpers.get_cloud_provider(self)
+        net = provider.networking.networks.get(self.kwargs['network_pk'])
+        obj = net.gateways.get_or_create_inet_gateway()
+        return obj
 
 
 class RouterViewSet(drf_helpers.CustomModelViewSet):
@@ -275,12 +276,12 @@ class FloatingIPViewSet(drf_helpers.CustomModelViewSet):
     def list_objects(self):
         provider = view_helpers.get_cloud_provider(self)
         ips = []
-        gateway = provider.networking.gateways.get_or_create_inet_gateway(
-            network=self.kwargs['network_pk']
-        )
+        net = provider.networking.networks.get(self.kwargs['network_pk'])
+        gateway = net.gateways.get_or_create_inet_gateway()
         for ip in gateway.floating_ips.list():
             if not ip.in_use:
-                ips.append({'ip': ip.public_ip})
+                ips.append({'id': ip.id, 'ip': ip.public_ip,
+                            'state': ip.state})
         return ips
 
 

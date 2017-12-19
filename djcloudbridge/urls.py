@@ -37,8 +37,6 @@ cloud_router.register(r'networking', views.NetworkingViewSet,
                       base_name='networking')
 cloud_router.register(r'networking/networks', views.NetworkViewSet,
                       base_name='network')
-cloud_router.register(r'networking/gateways', views.GatewayViewSet,
-                      base_name='gateway')
 cloud_router.register(r'networking/routers', views.RouterViewSet,
                       base_name='router')
 
@@ -66,8 +64,9 @@ vm_firewall_router.register(r'rules', views.VMFirewallRuleViewSet,
 network_router = HybridNestedRouter(cloud_router, r'networking/networks',
                                     lookup='network')
 network_router.register(r'subnets', views.SubnetViewSet, base_name='subnet')
+network_router.register(r'gateways', views.GatewayViewSet, base_name='gateway')
 
-gateway_router = HybridNestedRouter(cloud_router, r'networking/gateways',
+gateway_router = HybridNestedRouter(network_router, r'gateways',
                                     lookup='gateway')
 gateway_router.register(r'floating_ips', views.FloatingIPViewSet,
                         base_name='floating_ip')

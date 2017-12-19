@@ -148,9 +148,6 @@ class NetworkingSerializer(serializers.Serializer):
     networks = CustomHyperlinkedIdentityField(
         view_name='djcloudbridge:network-list',
         parent_url_kwargs=['cloud_pk'])
-    gateways = CustomHyperlinkedIdentityField(
-        view_name='djcloudbridge:gateway-list',
-        parent_url_kwargs=['cloud_pk'])
     routers = CustomHyperlinkedIdentityField(
         view_name='djcloudbridge:router-list',
         parent_url_kwargs=['cloud_pk'])
@@ -165,18 +162,27 @@ class NetworkSerializer(serializers.Serializer):
         parent_url_kwargs=['cloud_pk'])
     name = serializers.CharField()
     state = serializers.CharField(read_only=True)
-    cidr_block = serializers.CharField(read_only=True)
+    cidr_block = serializers.CharField()
     subnets = CustomHyperlinkedIdentityField(
         view_name='djcloudbridge:subnet-list',
+        lookup_field='id',
+        lookup_url_kwarg='network_pk',
+        parent_url_kwargs=['cloud_pk'])
+    gateways = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:gateway-list',
         lookup_field='id',
         lookup_url_kwarg='network_pk',
         parent_url_kwargs=['cloud_pk'])
 
     def create(self, validated_data):
         provider = view_helpers.get_cloud_provider(self.context.get('view'))
-        return provider.network.create(name=validated_data.get('name'))
+        return provider.networking.networks.create(
+            name=validated_data.get('name'),
+            cidr_block=validated_data.get('cidr_block', '10.0.0.0/16'))
 
     def update(self, instance, validated_data):
+        # We do not allow the cidr_block to be edited so the value is ignored
+        # and only the name is updated.
         try:
             if instance.name != validated_data.get('name'):
                 instance.name = validated_data.get('name')
@@ -199,9 +205,9 @@ class SubnetSerializer(serializers.Serializer):
     def create(self, validated_data):
         provider = view_helpers.get_cloud_provider(self.context.get('view'))
         net_id = self.context.get('view').kwargs.get('network_pk')
-        return provider.network.subnets.create(
-            net_id, validated_data.get('cidr_block'),
-            name=validated_data.get('name'))
+        return provider.networking.subnets.create(
+            name=validated_data.get('name'), network=net_id,
+            cidr_block=validated_data.get('cidr_block'))
 
 
 class SubnetSerializerUpdate(SubnetSerializer):
@@ -251,28 +257,28 @@ class GatewaySerializer(serializers.Serializer):
         view_name='djcloudbridge:gateway-detail',
         lookup_field='id',
         lookup_url_kwarg='pk',
-        parent_url_kwargs=['cloud_pk'])
+        parent_url_kwargs=['cloud_pk', 'network_pk'])
     name = serializers.CharField()
     state = serializers.CharField(read_only=True)
-    network_id = ProviderPKRelatedField(
-        queryset='networking.networks',
-        display_fields=['id', 'name'],
-        display_format="{1} ({0})")
+    network_id = serializers.CharField(read_only=True)
     floating_ips = CustomHyperlinkedIdentityField(
         view_name='djcloudbridge:floating_ip-list',
         lookup_field='id',
         lookup_url_kwarg='gateway_pk',
-        parent_url_kwargs=['cloud_pk'])
+        parent_url_kwargs=['cloud_pk', 'network_pk'])
 
     def create(self, validated_data):
         provider = view_helpers.get_cloud_provider(self.context.get('view'))
-        return provider.networking.gateways.get_or_create_inet_gateway(
-            network=validated_data.get('network_id').id,
+        net_id = self.context.get('view').kwargs.get('network_pk')
+        net = provider.networking.networks.get(net_id)
+        return net.gateways.get_or_create_inet_gateway(
             name=validated_data.get('name'))
 
 
 class FloatingIPSerializer(serializers.Serializer):
+    id = serializers.CharField(read_only=True)
     ip = serializers.CharField(read_only=True)
+    state = serializers.CharField(read_only=True)
 
 
 class VMTypeSerializer(serializers.Serializer):
