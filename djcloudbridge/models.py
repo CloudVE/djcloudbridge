@@ -140,8 +140,9 @@ class AWSCredentials(Credentials):
 
     def as_dict(self):
         d = super(AWSCredentials, self).as_dict()
-        d['aws_access_key'] = self.access_key,
+        d['aws_access_key'] = self.access_key
         d['aws_secret_key'] = self.secret_key
+        return d
 
 
 class OpenStackCredentials(Credentials):
