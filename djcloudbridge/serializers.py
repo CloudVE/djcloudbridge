@@ -699,7 +699,7 @@ class AWSCredsSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = models.AWSCredentials
-        exclude = ('secret_key', 'user_profile')
+        exclude = ('user_profile',)
 
 
 class OpenstackCredsSerializer(serializers.HyperlinkedModelSerializer):
@@ -714,7 +714,7 @@ class OpenstackCredsSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = models.OpenStackCredentials
-        exclude = ('password', 'user_profile')
+        exclude = ('user_profile',)
 
 
 class AzureCredsSerializer(serializers.HyperlinkedModelSerializer):
@@ -729,7 +729,7 @@ class AzureCredsSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = models.AzureCredentials
-        exclude = ('secret', 'user_profile')
+        exclude = ('user_profile',)
 
 
 class GCECredsSerializer(serializers.HyperlinkedModelSerializer):
