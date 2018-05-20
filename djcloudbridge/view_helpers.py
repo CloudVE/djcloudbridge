@@ -32,6 +32,77 @@ def get_credentials(cloud, request):
         return get_credentials_from_profile(cloud, request)
 
 
+def get_credentials_from_dict(payload):
+    """
+    Extract cloud-specific credentials from a dict with possibly other keys.
+
+    Fore example, given the following payload dict:
+    ```
+    {
+        "os_auth_url": "https://jblb.jetstream-cloud.org:35357/v3",
+        "os_region_name": "RegionOne",
+        "id": 2,
+        "name": "dev022",
+        "default": true,
+        "cloud_id": "jetstream",
+        "os_username": "***",
+        "os_password": "***",
+        "os_project_name": "***",
+        "os_project_domain_name": "tacc",
+        "os_user_domain_name": "tacc"
+    }
+    return:
+    {
+        'cloud': {'cloud_id': 'jetstream',
+                  'default': True,
+                  'id': 2,
+                  'name': 'dev022',
+                  'os_auth_url': 'https://jblb.jetstream-cloud.org:35357/v3',
+                  'os_project_domain_name': 'tacc',
+                  'os_project_name': '***',
+                  'os_region_name': 'RegionOne',
+                  'os_user_domain_name': 'tacc'},
+        'credentials': {'os_password': '***',
+                        'os_username': '***'}
+    }
+
+    :type payload: ``dict``
+    :param payload: A dictionary from which to extract credentials keys.
+
+    :rtype: ``dict``
+    :return: A dictionary with the following keys: ``credentials`` and
+             ``cloud``. Cloud-specific credentials will have been place under
+             the ``credentials`` key and the rest of the payload keys under
+             the ``cloud`` key.
+    """
+    creds = {}
+    if 'os_username' in payload.keys() and 'os_password' in payload.keys():
+        creds = {'os_username': payload.pop('os_username'),
+                 'os_password': payload.pop('os_password')}
+    elif ('aws_access_key' in payload.keys() and
+          'aws_secret_key' in payload.keys()):
+        creds = {'aws_access_key': payload.pop('aws_access_key'),
+                 'aws_secret_key': payload.pop('aws_secret_key')}
+    elif ('azure_subscription_id' in payload.keys() and
+          'azure_client_id' in payload.keys() and
+          'azure_secret' in payload.keys() and
+          'azure_tenant' in payload.keys()):
+        creds = {'azure_subscription_id': payload.pop('azure_subscription_id'),
+                 'azure_client_id': payload.pop('azure_client_id'),
+                 'azure_secret': payload.pop('azure_secret'),
+                 'azure_tenant': payload.pop('azure_tenant'),
+                 'azure_resource_group': payload.pop('azure_resource_group'),
+                 'azure_storage_account': payload.pop('azure_storage_account'),
+                 'azure_vm_default_username': payload.pop(
+                     'azure_vm_default_username')}
+    elif 'gce_credentials_json' in payload:
+        creds = json.loads(payload['gce_credentials_json'])
+    else:
+        raise Exception("Unrecognized or unmatched credentials: %s" % payload)
+    return {'credentials': creds,
+            'cloud': payload}
+
+
 def get_credentials_from_request(cloud, request):
     """
     Extracts and returns the credentials from the current request for a given
