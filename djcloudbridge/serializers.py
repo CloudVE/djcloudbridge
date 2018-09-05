@@ -439,8 +439,8 @@ class InstanceSerializer(serializers.Serializer):
         lookup_field='image_id',
         lookup_url_kwarg='pk',
         parent_url_kwargs=['cloud_pk'])
-    key_pair_name = ProviderPKRelatedField(
-        label="Keypair Name",
+    key_pair_id = ProviderPKRelatedField(
+        label="Keypair",
         queryset='security.key_pairs',
         display_fields=['id'],
         display_format="{0}",
