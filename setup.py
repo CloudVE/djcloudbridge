@@ -55,6 +55,7 @@ REQS_BASE = [
 
 REQS_TEST = ([
     'tox>=2.9.1',
+    'moto',
     'coverage>=4.4.1',
     'flake8>=3.4.1',
     'flake8-import-order>=0.13'] + REQS_BASE
