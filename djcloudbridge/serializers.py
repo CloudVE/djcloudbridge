@@ -13,8 +13,8 @@ from .drf_helpers import ProviderPKRelatedField
 
 
 class ZoneSerializer(serializers.Serializer):
-    id = serializers.CharField()
-    name = serializers.CharField()
+    id = serializers.CharField(read_only=True)
+    name = serializers.CharField(read_only=True)
 
 
 class RegionSerializer(serializers.Serializer):
@@ -24,7 +24,7 @@ class RegionSerializer(serializers.Serializer):
         lookup_field='id',
         lookup_url_kwarg='pk',
         parent_url_kwargs=['cloud_pk'])
-    name = serializers.CharField()
+    name = serializers.CharField(read_only=True)
     zones = CustomHyperlinkedIdentityField(
         view_name='djcloudbridge:zone-list',
         lookup_field='id',
@@ -39,7 +39,8 @@ class MachineImageSerializer(serializers.Serializer):
         lookup_field='id',
         lookup_url_kwarg='pk',
         parent_url_kwargs=['cloud_pk'])
-    name = serializers.CharField()
+    name = serializers.CharField(read_only=True)
+    label = serializers.CharField()
     description = serializers.CharField()
 
 
@@ -50,7 +51,7 @@ class KeyPairSerializer(serializers.Serializer):
         lookup_field='id',
         lookup_url_kwarg='pk',
         parent_url_kwargs=['cloud_pk'])
-    name = serializers.CharField()
+    name = serializers.CharField(required=True)
     material = serializers.CharField(read_only=True)
 
     def create(self, validated_data):
@@ -122,14 +123,15 @@ class VMFirewallSerializer(serializers.Serializer):
         lookup_field='id',
         lookup_url_kwarg='pk',
         parent_url_kwargs=['cloud_pk'])
-    name = serializers.CharField()
+    name = serializers.CharField(read_only=True)
+    label = serializers.CharField(required=True)
     # Technically, the description is required but when wanting to reuse an
     # existing VM firewall with a different resource (eg, creating an
     # instance), we need to be able to call this serializer w/o it.
     description = serializers.CharField(required=False)
     network_id = ProviderPKRelatedField(
         queryset='networking.networks',
-        display_fields=['id', 'name'],
+        display_fields=['id', 'label'],
         display_format="{1} ({0})")
     rules = CustomHyperlinkedIdentityField(
         view_name='djcloudbridge:vm_firewall_rule-list',
@@ -140,8 +142,9 @@ class VMFirewallSerializer(serializers.Serializer):
     def create(self, validated_data):
         provider = view_helpers.get_cloud_provider(self.context.get('view'))
         return provider.security.vm_firewalls.create(
-            validated_data.get('name'), validated_data.get('description'),
-            validated_data.get('network_id').id)
+            label=validated_data.get('label'),
+            network_id=validated_data.get('network_id').id,
+            description=validated_data.get('description'))
 
 
 class NetworkingSerializer(serializers.Serializer):
@@ -160,7 +163,8 @@ class NetworkSerializer(serializers.Serializer):
         lookup_field='id',
         lookup_url_kwarg='pk',
         parent_url_kwargs=['cloud_pk'])
-    name = serializers.CharField()
+    name = serializers.CharField(read_only=True)
+    label = serializers.CharField(required=True)
     state = serializers.CharField(read_only=True)
     cidr_block = serializers.CharField()
     subnets = CustomHyperlinkedIdentityField(
@@ -177,15 +181,15 @@ class NetworkSerializer(serializers.Serializer):
     def create(self, validated_data):
         provider = view_helpers.get_cloud_provider(self.context.get('view'))
         return provider.networking.networks.create(
-            name=validated_data.get('name'),
+            label=validated_data.get('label'),
             cidr_block=validated_data.get('cidr_block', '10.0.0.0/16'))
 
     def update(self, instance, validated_data):
         # We do not allow the cidr_block to be edited so the value is ignored
         # and only the name is updated.
         try:
-            if instance.name != validated_data.get('name'):
-                instance.name = validated_data.get('name')
+            if instance.label != validated_data.get('label'):
+                instance.label = validated_data.get('label')
             return instance
         except Exception as e:
             raise serializers.ValidationError("{0}".format(e))
@@ -198,7 +202,8 @@ class SubnetSerializer(serializers.Serializer):
         lookup_field='id',
         lookup_url_kwarg='pk',
         parent_url_kwargs=['cloud_pk', 'network_pk'])
-    name = serializers.CharField(allow_blank=True)
+    name = serializers.CharField(read_only=True)
+    label = serializers.CharField(required=True)
     cidr_block = serializers.CharField()
     network_id = serializers.CharField(read_only=True)
 
@@ -206,7 +211,7 @@ class SubnetSerializer(serializers.Serializer):
         provider = view_helpers.get_cloud_provider(self.context.get('view'))
         net_id = self.context.get('view').kwargs.get('network_pk')
         return provider.networking.subnets.create(
-            name=validated_data.get('name'), network=net_id,
+            label=validated_data.get('label'), network=net_id,
             cidr_block=validated_data.get('cidr_block'))
 
 
@@ -215,8 +220,8 @@ class SubnetSerializerUpdate(SubnetSerializer):
 
     def update(self, instance, validated_data):
         try:
-            if instance.name != validated_data.get('name'):
-                instance.name = validated_data.get('name')
+            if instance.label != validated_data.get('label'):
+                instance.label = validated_data.get('label')
             return instance
         except Exception as e:
             raise serializers.ValidationError("{0}".format(e))
@@ -229,7 +234,8 @@ class RouterSerializer(serializers.Serializer):
         lookup_field='id',
         lookup_url_kwarg='pk',
         parent_url_kwargs=['cloud_pk'])
-    name = serializers.CharField()
+    name = serializers.CharField(read_only=True)
+    label = serializers.CharField(required=True)
     state = serializers.CharField(read_only=True)
     network_id = ProviderPKRelatedField(
         queryset='networking.networks',
@@ -239,13 +245,13 @@ class RouterSerializer(serializers.Serializer):
     def create(self, validated_data):
         provider = view_helpers.get_cloud_provider(self.context.get('view'))
         return provider.networking.routers.create(
-            network=validated_data.get('network_id').id,
-            name=validated_data.get('name'))
+            label=validated_data.get('label'),
+            network=validated_data.get('network_id').id)
 
     def update(self, instance, validated_data):
         try:
-            if instance.name != validated_data.get('name'):
-                instance.name = validated_data.get('name')
+            if instance.label != validated_data.get('label'):
+                instance.label = validated_data.get('label')
             return instance
         except Exception as e:
             raise serializers.ValidationError("{0}".format(e))
@@ -322,7 +328,8 @@ class VolumeSerializer(serializers.Serializer):
         lookup_field='id',
         lookup_url_kwarg='pk',
         parent_url_kwargs=['cloud_pk'])
-    name = serializers.CharField()
+    name = serializers.CharField(read_only=True)
+    label = serializers.CharField(required=True)
     description = serializers.CharField(allow_blank=True)
     size = serializers.IntegerField(min_value=0)
     create_time = serializers.CharField(read_only=True)
@@ -336,7 +343,7 @@ class VolumeSerializer(serializers.Serializer):
     snapshot_id = ProviderPKRelatedField(
         label="Snapshot ID",
         queryset='storage.snapshots',
-        display_fields=['name', 'id', 'size'],
+        display_fields=['label', 'id', 'size'],
         display_format="{0} (ID: {1}, Size: {2} GB)",
         write_only=True,
         required=False,
@@ -348,7 +355,7 @@ class VolumeSerializer(serializers.Serializer):
         provider = view_helpers.get_cloud_provider(self.context.get('view'))
         try:
             return provider.storage.volumes.create(
-                validated_data.get('name'),
+                validated_data.get('label'),
                 validated_data.get('size'),
                 validated_data.get('zone_id'),
                 description=validated_data.get('description'),
@@ -358,8 +365,8 @@ class VolumeSerializer(serializers.Serializer):
 
     def update(self, instance, validated_data):
         try:
-            if instance.name != validated_data.get('name'):
-                instance.name = validated_data.get('name')
+            if instance.label != validated_data.get('label'):
+                instance.label = validated_data.get('label')
             if instance.description != validated_data.get('description'):
                 instance.description = validated_data.get('description')
             return instance
@@ -374,13 +381,14 @@ class SnapshotSerializer(serializers.Serializer):
         lookup_field='id',
         lookup_url_kwarg='pk',
         parent_url_kwargs=['cloud_pk'])
-    name = serializers.CharField()
+    name = serializers.CharField(read_only=True)
+    label = serializers.CharField(required=True)
     description = serializers.CharField()
     state = serializers.CharField(read_only=True)
     volume_id = ProviderPKRelatedField(
         label="Volume ID",
         queryset='storage.volumes',
-        display_fields=['name', 'id', 'size'],
+        display_fields=['label', 'id', 'size'],
         display_format="{0} (ID: {1}, Size: {2} GB)",
         required=True)
     create_time = serializers.CharField(read_only=True)
@@ -390,7 +398,7 @@ class SnapshotSerializer(serializers.Serializer):
         provider = view_helpers.get_cloud_provider(self.context.get('view'))
         try:
             return provider.storage.snapshots.create(
-                validated_data.get('name'),
+                validated_data.get('label'),
                 validated_data.get('volume_id'),
                 description=validated_data.get('description'))
         except Exception as e:
@@ -398,8 +406,8 @@ class SnapshotSerializer(serializers.Serializer):
 
     def update(self, instance, validated_data):
         try:
-            if instance.name != validated_data.get('name'):
-                instance.name = validated_data.get('name')
+            if instance.label != validated_data.get('label'):
+                instance.label = validated_data.get('label')
             if instance.description != validated_data.get('description'):
                 instance.description = validated_data.get('description')
             return instance
@@ -414,7 +422,8 @@ class InstanceSerializer(serializers.Serializer):
         lookup_field='id',
         lookup_url_kwarg='pk',
         parent_url_kwargs=['cloud_pk'])
-    name = serializers.CharField()
+    name = serializers.CharField(read_only=True)
+    label = serializers.CharField(required=True)
     public_ips = serializers.ListField(serializers.IPAddressField())
     private_ips = serializers.ListField(serializers.IPAddressField())
     vm_type_id = ProviderPKRelatedField(
@@ -431,8 +440,8 @@ class InstanceSerializer(serializers.Serializer):
     image_id = ProviderPKRelatedField(
         label="Image",
         queryset='compute.images',
-        display_fields=['name', 'id'],
-        display_format="{0} ({1})",
+        display_fields=['name', 'id', 'label'],
+        display_format="{0} (ID: {1}, Label: {2})",
         required=True)
     image_id_url = CustomHyperlinkedIdentityField(
         view_name='djcloudbridge:machine_image-detail',
@@ -445,6 +454,11 @@ class InstanceSerializer(serializers.Serializer):
         display_fields=['id'],
         display_format="{0}",
         required=True)
+    subnet_id = ProviderPKRelatedField(
+        label="Subnet",
+        queryset='networking.subnets',
+        display_fields=['id', 'label'],
+        display_format="{1} ({0})")
     zone_id = PlacementZonePKRelatedField(
         label="Placement Zone",
         queryset='non_empty_value',
@@ -454,24 +468,25 @@ class InstanceSerializer(serializers.Serializer):
     vm_firewall_ids = ProviderPKRelatedField(
         label="VM Firewalls",
         queryset='security.vm_firewalls',
-        display_fields=['name'],
-        display_format="{0}",
+        display_fields=['name', 'id', 'label'],
+        display_format="{0} (ID: {1}, Label: {2})",
         many=True)
-    user_data = serializers.CharField(write_only=True,
+    user_data = serializers.CharField(write_only=True, allow_blank=True,
                                       style={'base_template': 'textarea.html'})
 
     def create(self, validated_data):
         provider = view_helpers.get_cloud_provider(self.context.get('view'))
-        name = validated_data.get('name')
+        label = validated_data.get('label')
         image_id = validated_data.get('image_id')
         vm_type = validated_data.get('vm_type_id')
         kp_name = validated_data.get('key_pair_name')
         zone_id = validated_data.get('zone_id')
         vm_firewall_ids = validated_data.get('vm_firewall_ids')
+        subnet_id = validated_data.get('subnet_id')
         user_data = validated_data.get('user_data')
         try:
             return provider.compute.instances.create(
-                name, image_id, vm_type, zone=zone_id,
+                label, image_id, vm_type, subnet_id, zone_id,
                 key_pair=kp_name, vm_firewalls=vm_firewall_ids,
                 user_data=user_data)
         except Exception as e:
@@ -479,8 +494,8 @@ class InstanceSerializer(serializers.Serializer):
 
     def update(self, instance, validated_data):
         try:
-            if instance.name != validated_data.get('name'):
-                instance.name = validated_data.get('name')
+            if instance.label != validated_data.get('label'):
+                instance.label = validated_data.get('label')
             return instance
         except Exception as e:
             raise serializers.ValidationError("{0}".format(e))
