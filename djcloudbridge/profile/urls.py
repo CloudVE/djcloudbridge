@@ -3,7 +3,6 @@ from django.conf.urls import include
 from django.conf.urls import url
 
 from .. import views
-
 from ..drf_routers import HybridSimpleRouter
 
 profile_router = HybridSimpleRouter()

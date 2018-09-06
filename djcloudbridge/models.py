@@ -4,8 +4,10 @@ import json
 from django.contrib.auth.models import User
 from django.db import models
 from django.template.defaultfilters import slugify
+
 from fernet_fields import EncryptedCharField
 from fernet_fields import EncryptedTextField
+
 from model_utils.managers import InheritanceManager
 
 
