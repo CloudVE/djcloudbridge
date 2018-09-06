@@ -206,13 +206,20 @@ class SubnetSerializer(serializers.Serializer):
     label = serializers.CharField(required=True)
     cidr_block = serializers.CharField()
     network_id = serializers.CharField(read_only=True)
+    zone = PlacementZonePKRelatedField(
+        label="Zone",
+        queryset='non_empty_value',
+        display_fields=['id'],
+        display_format="{0}",
+        required=True)
 
     def create(self, validated_data):
         provider = view_helpers.get_cloud_provider(self.context.get('view'))
         net_id = self.context.get('view').kwargs.get('network_pk')
         return provider.networking.subnets.create(
             label=validated_data.get('label'), network=net_id,
-            cidr_block=validated_data.get('cidr_block'))
+            cidr_block=validated_data.get('cidr_block'),
+            zone=validated_data.get('zone'))
 
 
 class SubnetSerializerUpdate(SubnetSerializer):
