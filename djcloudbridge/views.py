@@ -1,3 +1,5 @@
+import logging
+
 from django.http.response import FileResponse
 from django.http.response import Http404
 
@@ -13,6 +15,8 @@ from . import drf_helpers
 from . import models
 from . import serializers
 from . import view_helpers
+
+log = logging.getLogger(__name__)
 
 
 class InfrastructureView(APIView):
@@ -305,7 +309,11 @@ class VMTypeViewSet(drf_helpers.CustomReadOnlyModelViewSet):
 
     def list_objects(self):
         provider = view_helpers.get_cloud_provider(self)
-        return provider.compute.vm_types.list(limit=500)
+        try:
+            return provider.compute.vm_types.list(limit=500)
+        except Exception as exc:
+            log.error("Exception listing vm types: %s", exc)
+            return []
 
     def get_object(self):
         provider = view_helpers.get_cloud_provider(self)
