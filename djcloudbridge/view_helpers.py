@@ -36,8 +36,7 @@ def get_credentials_from_dict(payload):
     """
     Extract cloud-specific credentials from a dict with possibly other keys.
 
-    Fore example, given the following payload dict:
-    ```
+    For example, given the following payload dict:
     {
         "os_auth_url": "https://jblb.jetstream-cloud.org:35357/v3",
         "os_region_name": "RegionOne",
