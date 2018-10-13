@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 
-from django.contrib.auth.models import User
+from django.conf import settings
 from django.db import models
 from django.template.defaultfilters import slugify
 
@@ -227,7 +227,7 @@ class AzureCredentials(Credentials):
 
 class UserProfile(models.Model):
     # Link UserProfile to a User model instance
-    user = models.OneToOneField(User, models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, models.CASCADE)
     slug = models.SlugField(unique=True, primary_key=True, editable=False)
 
     class Meta:
