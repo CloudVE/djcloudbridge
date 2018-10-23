@@ -188,6 +188,11 @@ def get_credentials_by_id(cloud, request, credentials_id):
     """
     if request.user.is_anonymous:
         return {}
+
+    if not hasattr(request.user, 'userprofile'):
+        # Create a user profile if it does not exist
+        models.UserProfile.objects.create(user=request.user)
+
     profile = request.user.userprofile
 
     if credentials_id:
@@ -211,6 +216,11 @@ def get_credentials_from_profile(cloud, request):
     """
     if request.user.is_anonymous:
         return {}
+
+    if not hasattr(request.user, 'userprofile'):
+        # Create a user profile if it does not exist
+        models.UserProfile.objects.create(user=request.user)
+
     profile = request.user.userprofile
 
     # Check for default credentials
