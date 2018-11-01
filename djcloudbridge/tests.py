@@ -28,7 +28,7 @@ class BaseAuthenticatedAPITestCase(APITestCase):
 
     def _create_cloud_creds(self):
         cloud = cb_models.AWS.objects.create(**self.CLOUD_DATA)
-        user_profile = cb_models.UserProfile.objects.create(user=self.user)
+        user_profile = cb_models.UserProfile.objects.get(user=self.user)
         credentials = cb_models.AWSCredentials.objects.create(
             cloud=cloud,
             access_key='dummy_access_key',

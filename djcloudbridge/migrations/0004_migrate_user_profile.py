@@ -7,6 +7,8 @@ def gen_user_profile(apps, schema_editor):
     UserModel = apps.get_model("auth.User")
     UserProfileModel = apps.get_model('djcloudbridge.UserProfile')
     for user in UserModel.objects.all():
+        # Manually create slug because the save() method does not get
+        # called during migrations
         UserProfileModel.objects.get_or_create(
             slug=slugify(user.username), user=user)
 
