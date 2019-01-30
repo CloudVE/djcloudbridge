@@ -194,7 +194,7 @@ class GCECredentials(Credentials):
         gce_creds = json.loads(self.credentials)
         # Overwrite with super values in case gce_creds also has an id property
         gce_creds.update(d)
-        return d
+        return gce_creds
 
 
 class AzureCredentials(Credentials):
