@@ -89,7 +89,7 @@ versions, 3.6 is the only supported version. Use of virtualenv is also
 highly advised.
 
 To get started, simply register the provider connection information under the
-relevant cloud model (e.g. AWS, Azure, GCE, OpenStack) in Django Admin.
+relevant cloud model (e.g. AWS, Azure, GCP, OpenStack) in Django Admin.
 Then create a User Profile under the User Profile model. Finally, use the API
 browser at http://localhost:8000/clouds to view the cloud you registered and
 interact with cloud resources for that provider.

@@ -531,17 +531,17 @@ class AzureCredentialsViewSet(CredentialsViewSet):
         return models.AzureCredentials.objects.none()
 
 
-class GCECredentialsViewSet(CredentialsViewSet):
+class GCPCredentialsViewSet(CredentialsViewSet):
     """
-    API endpoint that allows GCE credentials to be viewed or edited.
+    API endpoint that allows GCP credentials to be viewed or edited.
     """
-    queryset = models.GCECredentials.objects.all()
-    serializer_class = serializers.GCECredsSerializer
+    queryset = models.GCPCredentials.objects.all()
+    serializer_class = serializers.GCPCredsSerializer
     # permission_classes = [permissions.DjangoModelPermissions]
 
     def get_queryset(self):
         user = self.request.user
         if hasattr(user, 'userprofile'):
             return user.userprofile.credentials.filter(
-                gcecredentials__isnull=False).select_subclasses()
-        return models.GCECredentials.objects.none()
+                gcpcredentials__isnull=False).select_subclasses()
+        return models.GCPCredentials.objects.none()

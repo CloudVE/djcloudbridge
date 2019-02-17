@@ -83,13 +83,13 @@ class OpenStack(Cloud):
         verbose_name_plural = "OpenStack"
 
 
-class GCE(Cloud):
+class GCP(Cloud):
     region_name = models.CharField(max_length=100, blank=False, null=False)
     zone_name = models.CharField(max_length=100, blank=False, null=False)
 
     class Meta:
-        verbose_name = "GCE"
-        verbose_name_plural = "GCE"
+        verbose_name = "GCP"
+        verbose_name_plural = "GCP"
 
 
 class Azure(Cloud):
@@ -172,7 +172,7 @@ class OpenStackCredentials(Credentials):
         return d
 
 
-class GCECredentials(Credentials):
+class GCPCredentials(Credentials):
     credentials = EncryptedTextField(blank=False, null=False)
 
     def save(self, *args, **kwargs):
@@ -180,21 +180,21 @@ class GCECredentials(Credentials):
             try:
                 json.loads(self.credentials)
             except Exception as e:
-                raise Exception("Invalid JSON syntax. GCE Credentials must be"
+                raise Exception("Invalid JSON syntax. GCP Credentials must be"
                                 " in JSON format. Cause: {0}".format(e))
 
-        super(GCECredentials, self).save(*args, **kwargs)
+        super(GCPCredentials, self).save(*args, **kwargs)
 
     class Meta:
-        verbose_name = "GCE Credential"
-        verbose_name_plural = "GCE Credentials"
+        verbose_name = "GCP Credential"
+        verbose_name_plural = "GCP Credentials"
 
     def as_dict(self):
-        d = super(GCECredentials, self).as_dict()
-        gce_creds = json.loads(self.credentials)
-        # Overwrite with super values in case gce_creds also has an id property
-        gce_creds.update(d)
-        return gce_creds
+        d = super(GCPCredentials, self).as_dict()
+        gcp_creds = json.loads(self.credentials)
+        # Overwrite with super values in case gcp_creds also has an id property
+        gcp_creds.update(d)
+        return gcp_creds
 
 
 class AzureCredentials(Credentials):

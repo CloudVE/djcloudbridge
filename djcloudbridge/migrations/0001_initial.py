@@ -146,27 +146,27 @@ class Migration(migrations.Migration):
             bases=('djcloudbridge.credentials',),
         ),
         migrations.CreateModel(
-            name='GCE',
+            name='GCP',
             fields=[
                 ('cloud_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='djcloudbridge.Cloud')),
                 ('region_name', models.CharField(max_length=100)),
                 ('zone_name', models.CharField(max_length=100)),
             ],
             options={
-                'verbose_name': 'GCE',
-                'verbose_name_plural': 'GCE',
+                'verbose_name': 'GCP',
+                'verbose_name_plural': 'GCP',
             },
             bases=('djcloudbridge.cloud',),
         ),
         migrations.CreateModel(
-            name='GCECredentials',
+            name='GCPCredentials',
             fields=[
                 ('credentials_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='djcloudbridge.Credentials')),
                 ('credentials', fernet_fields.fields.EncryptedTextField()),
             ],
             options={
-                'verbose_name': 'GCE Credential',
-                'verbose_name_plural': 'GCE Credentials',
+                'verbose_name': 'GCP Credential',
+                'verbose_name_plural': 'GCP Credentials',
             },
             bases=('djcloudbridge.credentials',),
         ),

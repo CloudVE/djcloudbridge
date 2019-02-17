@@ -47,12 +47,12 @@ def get_cloud_provider(cloud, cred_dict):
         config.update(cred_dict or {})
         return CloudProviderFactory().create_provider(ProviderList.AZURE,
                                                       config)
-    elif isinstance(cloud, models.GCE):
-        config = {'gce_service_creds_dict': cred_dict,
-                  'gce_default_zone': cloud.zone_name,
-                  'gce_region_name': cloud.region_name}
+    elif isinstance(cloud, models.GCP):
+        config = {'gcp_service_creds_dict': cred_dict,
+                  'gcp_default_zone': cloud.zone_name,
+                  'gcp_region_name': cloud.region_name}
         config.update(cred_dict or {})
-        return CloudProviderFactory().create_provider(ProviderList.GCE,
+        return CloudProviderFactory().create_provider(ProviderList.GCP,
                                                       config)
     else:
         raise Exception("Unrecognised cloud provider: %s" % cloud)
