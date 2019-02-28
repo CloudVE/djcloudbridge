@@ -45,7 +45,8 @@ readme = open('README.rst').read()
 history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 REQS_BASE = [
-    'django-model-utils>=3.0',
+    'django-polymorphic>=2.0.3',
+    'django-rest-polymorphic>=0.1.8',
     'djangorestframework>=3.0.0',
     'drf-nested-routers',
     'django-rest-auth',  # for user serialization

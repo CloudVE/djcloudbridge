@@ -8,7 +8,7 @@ from django.template.defaultfilters import slugify
 from fernet_fields import EncryptedCharField
 from fernet_fields import EncryptedTextField
 
-from model_utils.managers import InheritanceManager
+from polymorphic.models import PolymorphicModel
 
 
 class DateNameAwareModel(models.Model):
@@ -25,56 +25,53 @@ class DateNameAwareModel(models.Model):
         return "{0}".format(self.name)
 
 
-class Cloud(DateNameAwareModel):
-    # Ideally, this would be a proxy class so it can be used to uniformly
-    # retrieve all cloud objects (e.g., Cloud.objects.all()) but without
-    # explicitly existing in the database. However, without a parent class
-    # (e.g., Infrastructure), this cannot be due to Django restrictions
-    # https://docs.djangoproject.com/en/1.9/topics/db/
-    #   models/#base-class-restrictions
-    objects = InheritanceManager()
+class Cloud(PolymorphicModel):
+    name = models.CharField(max_length=60)
+    id = models.SlugField(max_length=50, primary_key=True)
     access_instructions_url = models.URLField(max_length=2048, blank=True,
                                               null=True)
-    kind = models.CharField(max_length=10, default='cloud', editable=False)
-    slug = models.SlugField(max_length=50, primary_key=True)
 
     def save(self, *args, **kwargs):
-        if not self.slug:
+        if not self.id:
             # Newly created object, so set slug
-            self.slug = slugify(self.name)
+            self.id = slugify(self.name)
         super(Cloud, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return "{0} ({1})".format(self.name, self.id)
 
     class Meta:
         ordering = ['name']
+        verbose_name = "Cloud"
+        verbose_name_plural = "Clouds"
 
 
-class AWS(Cloud):
-    region_name = models.CharField(max_length=100,
-                                   verbose_name="AWS region name")
-    ec2_endpoint_url = models.CharField(max_length=255,
-                                        verbose_name="EC2 endpoint url")
-    ec2_is_secure = models.BooleanField(default=True,
-                                        verbose_name="EC2 is secure")
-    ec2_validate_certs = models.BooleanField(
-        default=True, verbose_name="EC2 validate certificates")
-    s3_endpoint_url = models.CharField(max_length=255,
-                                       verbose_name="S3 endpoint url")
-    s3_is_secure = models.BooleanField(default=True,
-                                       verbose_name="S3 is secure")
-    s3_validate_certs = models.BooleanField(
-        default=True, verbose_name="S3 validate certificates")
+class AWSCloud(Cloud):
 
     class Meta:
-        verbose_name = "AWS"
-        verbose_name_plural = "AWS"
+        verbose_name = "Amazon Web Services"
+        verbose_name_plural = "Amazon Web Services"
 
 
-class OpenStack(Cloud):
+class AzureCloud(Cloud):
+
+    class Meta:
+        verbose_name = "Azure"
+        verbose_name_plural = "Azure"
+
+
+class GCPCloud(Cloud):
+
+    class Meta:
+        verbose_name = "Google Cloud Platform"
+        verbose_name_plural = "Google Cloud Platform"
+
+
+class OpenStackCloud(Cloud):
     KEYSTONE_VERSION_CHOICES = (
         ('v2.0', 'v2.0'),
         ('v3.0', 'v3.0'))
     auth_url = models.CharField(max_length=255, blank=False, null=False)
-    region_name = models.CharField(max_length=100, blank=False, null=False)
     identity_api_version = models.CharField(
         max_length=10, blank=True, null=True, choices=KEYSTONE_VERSION_CHOICES)
 
@@ -83,30 +80,100 @@ class OpenStack(Cloud):
         verbose_name_plural = "OpenStack"
 
 
-class GCP(Cloud):
-    region_name = models.CharField(max_length=100, blank=False, null=False)
-    zone_name = models.CharField(max_length=100, blank=False, null=False)
+class Region(PolymorphicModel):
+    cloud = models.ForeignKey('Cloud', models.CASCADE,
+                              related_name='regions')
+    name = models.CharField(
+        max_length=60, verbose_name="Region name",
+        help_text="This is the name of the region as understood by the cloud "
+                  "provider and is required. e.g. us-east-1")
+    region_id = models.SlugField(
+        max_length=50, verbose_name="Region id",
+        help_text="This is the id for the region and is used in the ReST url.")
+
+    def __str__(self):
+        return "{0} ({1})".format(self.name, self.region_id)
+
+    def save(self, *args, **kwargs):
+        if not self.region_id:
+            # Newly created object, so set slug
+            self.region_id = slugify(self.name)
+        super(Region, self).save(*args, **kwargs)
 
     class Meta:
-        verbose_name = "GCP"
-        verbose_name_plural = "GCP"
+        ordering = ['name']
+        unique_together = (("cloud", "region_id"),)
 
 
-class Azure(Cloud):
-    region_name = models.CharField(max_length=100, blank=True, null=False)
+class AWSRegion(Region):
+    ec2_endpoint_url = models.CharField(
+        max_length=255, blank=True, null=True, verbose_name="EC2 endpoint url",
+        help_text="This field should be left blank unless using a custom "
+                  "endpoint for an AWS compatible cloud.")
+    ec2_is_secure = models.BooleanField(default=True,
+                                        verbose_name="EC2 is secure")
+    ec2_validate_certs = models.BooleanField(
+        default=True, verbose_name="EC2 validate certificates")
+    s3_endpoint_url = models.CharField(max_length=255, blank=True, null=True,
+                                       verbose_name="S3 endpoint url")
+    s3_is_secure = models.BooleanField(default=True,
+                                       verbose_name="S3 is secure")
+    s3_validate_certs = models.BooleanField(
+        default=True, verbose_name="S3 validate certificates")
+
+    class Meta:
+        verbose_name = "AWS Region"
+        verbose_name_plural = "AWS Regions"
+
+
+class AzureRegion(Region):
 
     class Meta:
         verbose_name = "Azure"
         verbose_name_plural = "Azure"
 
 
-class Credentials(DateNameAwareModel):
+class GCPRegion(Region):
+
+    class Meta:
+        verbose_name = "GCP"
+        verbose_name_plural = "GCP"
+
+
+class OpenStackRegion(Region):
+
+    class Meta:
+        verbose_name = "OpenStack Region"
+        verbose_name_plural = "OpenStack Regions"
+
+
+class Zone(models.Model):
+    zone_id = models.SlugField(max_length=50, verbose_name="Zone id")
+    region = models.ForeignKey('Region', models.CASCADE,
+                               related_name='zones')
+    name = models.CharField(max_length=60, verbose_name="Zone name",
+                            blank=True, null=True)
+
+    def __str__(self):
+        return "{0} ({1})".format(self.name, self.zone_id)
+
+    def save(self, *args, **kwargs):
+        if not self.zone_id:
+            # Newly created object, so set slug
+            self.zone_id = slugify(self.name)
+        super(Zone, self).save(*args, **kwargs)
+
+    class Meta:
+        ordering = ['name']
+        unique_together = (("region", "zone_id"),)
+
+
+class Credentials(PolymorphicModel, DateNameAwareModel):
     default = models.BooleanField(
         help_text="If set, use as default credentials for the selected cloud",
         blank=True, default=False)
     cloud = models.ForeignKey('Cloud', models.CASCADE,
                               related_name='credentials')
-    objects = InheritanceManager()
     user_profile = models.ForeignKey('UserProfile', models.CASCADE,
                                      related_name='credentials')
 
@@ -118,7 +185,7 @@ class Credentials(DateNameAwareModel):
         if self.default is True:
             previous_default = Credentials.objects.filter(
                 cloud=self.cloud, default=True,
-                user_profile=self.user_profile).select_subclasses().first()
+                user_profile=self.user_profile).first()
             if previous_default:
                 previous_default.default = False
                 previous_default.save()

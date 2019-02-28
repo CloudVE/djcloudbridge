@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.sites",
     "django.contrib.sessions",
     'django.contrib.staticfiles',
+    'polymorphic',
     "rest_framework",
     "djcloudbridge",
 ]

@@ -5,7 +5,7 @@ from . import models
 
 
 class CloudAdmin(admin.ModelAdmin):
-    prepopulated_fields = {"slug": ("name",)}
+    prepopulated_fields = {"id": ("name",)}
 
 
 class AWSCredsInline(admin.StackedInline):
@@ -40,8 +40,8 @@ class UserProfileAdmin(admin.ModelAdmin):
     inlines = [AWSCredsInline, OSCredsInline, AzureCredsInline, GCPCredsInline]
 
 
-admin.site.register(models.AWS, CloudAdmin)
-admin.site.register(models.Azure, CloudAdmin)
-admin.site.register(models.OpenStack, CloudAdmin)
-admin.site.register(models.GCP, CloudAdmin)
+admin.site.register(models.AWSCloud, CloudAdmin)
+admin.site.register(models.AzureCloud, CloudAdmin)
+admin.site.register(models.OpenStackCloud, CloudAdmin)
+admin.site.register(models.GCPCloud, CloudAdmin)
 admin.site.register(models.UserProfile, UserProfileAdmin)
