@@ -94,8 +94,8 @@ def get_credentials_from_dict(payload):
                  'azure_storage_account': payload.pop('azure_storage_account'),
                  'azure_vm_default_username': payload.pop(
                      'azure_vm_default_username')}
-    elif 'gce_service_creds_dict' in payload:
-        creds = payload['gce_service_creds_dict']
+    elif 'gcp_service_creds_dict' in payload:
+        creds = payload['gcp_service_creds_dict']
     else:
         raise Exception("Unrecognized or unmatched credentials: %s" % payload)
     return {'credentials': creds,
@@ -169,11 +169,11 @@ def get_credentials_from_request(cloud, request):
                     }
         else:
             return {}
-    elif isinstance(cloud, models.GCE):
-        gce_credentials_json = request.META.get('HTTP_CL_GCE_CREDENTIALS_JSON')
+    elif isinstance(cloud, models.GCP):
+        gcp_credentials_json = request.META.get('HTTP_CL_GCP_CREDENTIALS_JSON')
 
-        if gce_credentials_json:
-            return json.loads(gce_credentials_json)
+        if gcp_credentials_json:
+            return json.loads(gcp_credentials_json)
         else:
             return {}
     else:

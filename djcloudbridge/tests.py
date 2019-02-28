@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 from cloudbridge.cloud.factory import CloudProviderFactory
+from cloudbridge.cloud.factory import ProviderList
 
 from django.contrib.auth.models import User
 from django.urls import reverse
@@ -39,18 +40,12 @@ class BaseAuthenticatedAPITestCase(APITestCase):
 
     def _force_mock_provider(self):
         original_create_provider = CloudProviderFactory.create_provider
-        original_get_provider = CloudProviderFactory.get_provider_class
-
-        def _get_mock_provider_class(self, name, get_mock=False):
-            return original_get_provider(self, name, get_mock=True)
 
         def _create_mock_provider_class(self, name, config):
-            provider = original_create_provider(self, name, {})
+            provider = original_create_provider(self, ProviderList.MOCK, {})
             provider.setUpMock()
             return provider
 
-        patch.object(CloudProviderFactory, 'get_provider_class',
-                     _get_mock_provider_class).start()
         patch.object(CloudProviderFactory, 'create_provider',
                      _create_mock_provider_class).start()
 

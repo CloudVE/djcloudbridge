@@ -13,8 +13,8 @@ profile_router.register(r'credentials/openstack',
                         views.OpenstackCredentialsViewSet)
 profile_router.register(r'credentials/azure',
                         views.AzureCredentialsViewSet)
-profile_router.register(r'credentials/gce',
-                        views.GCECredentialsViewSet)
+profile_router.register(r'credentials/gcp',
+                        views.GCPCredentialsViewSet)
 
 urlpatterns = [
     url(r'user/', include(profile_router.urls))

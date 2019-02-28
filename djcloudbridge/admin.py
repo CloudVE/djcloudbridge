@@ -22,9 +22,9 @@ class OSCredsInline(admin.StackedInline):
     extra = 1
 
 
-class GCECredsInline(admin.StackedInline):
-    model = models.GCECredentials
-    form = forms.GCECredentialsForm
+class GCPCredsInline(admin.StackedInline):
+    model = models.GCPCredentials
+    form = forms.GCPCredentialsForm
     formset = forms.DefaultRequiredInlineFormSet
     extra = 1
 
@@ -37,11 +37,11 @@ class AzureCredsInline(admin.StackedInline):
 
 
 class UserProfileAdmin(admin.ModelAdmin):
-    inlines = [AWSCredsInline, OSCredsInline, AzureCredsInline, GCECredsInline]
+    inlines = [AWSCredsInline, OSCredsInline, AzureCredsInline, GCPCredsInline]
 
 
 admin.site.register(models.AWS, CloudAdmin)
 admin.site.register(models.Azure, CloudAdmin)
 admin.site.register(models.OpenStack, CloudAdmin)
-admin.site.register(models.GCE, CloudAdmin)
+admin.site.register(models.GCP, CloudAdmin)
 admin.site.register(models.UserProfile, UserProfileAdmin)
