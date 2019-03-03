@@ -7,31 +7,35 @@ from rest_auth.serializers import UserDetailsSerializer
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 
+from rest_polymorphic.serializers import PolymorphicSerializer
+
 from . import models
 from . import view_helpers
+from .drf_helpers import CloudRegionHyperlink
+from .drf_helpers import CloudZoneHyperlink
 from .drf_helpers import CustomHyperlinkedIdentityField
 from .drf_helpers import PlacementZonePKRelatedField
 from .drf_helpers import ProviderPKRelatedField
 
 
-class ZoneSerializer(serializers.Serializer):
+class ComputeZoneSerializer(serializers.Serializer):
     id = serializers.CharField(read_only=True)
     name = serializers.CharField(read_only=True)
 
 
-class RegionSerializer(serializers.Serializer):
+class ComputeRegionSerializer(serializers.Serializer):
     id = serializers.CharField(read_only=True)
     url = CustomHyperlinkedIdentityField(
-        view_name='djcloudbridge:region-detail',
+        view_name='djcloudbridge:compute_region-detail',
         lookup_field='id',
         lookup_url_kwarg='pk',
-        parent_url_kwargs=['cloud_pk'])
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
     name = serializers.CharField(read_only=True)
     zones = CustomHyperlinkedIdentityField(
-        view_name='djcloudbridge:zone-list',
+        view_name='djcloudbridge:compute_zone-list',
         lookup_field='id',
-        lookup_url_kwarg='region_pk',
-        parent_url_kwargs=['cloud_pk'])
+        lookup_url_kwarg='compute_region_pk',
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
 
 
 class MachineImageSerializer(serializers.Serializer):
@@ -40,7 +44,7 @@ class MachineImageSerializer(serializers.Serializer):
         view_name='djcloudbridge:machine_image-detail',
         lookup_field='id',
         lookup_url_kwarg='pk',
-        parent_url_kwargs=['cloud_pk'])
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
     name = serializers.CharField(read_only=True)
     label = serializers.CharField()
     description = serializers.CharField()
@@ -52,7 +56,7 @@ class KeyPairSerializer(serializers.Serializer):
         view_name='djcloudbridge:keypair-detail',
         lookup_field='id',
         lookup_url_kwarg='pk',
-        parent_url_kwargs=['cloud_pk'])
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
     name = serializers.CharField(required=True)
     material = serializers.CharField(read_only=True)
 
@@ -77,7 +81,8 @@ class VMFirewallRuleSerializer(serializers.Serializer):
         view_name='djcloudbridge:vm_firewall_rule-detail',
         lookup_field='id',
         lookup_url_kwarg='pk',
-        parent_url_kwargs=['cloud_pk', 'vm_firewall_pk'])
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk',
+                           'vm_firewall_pk'])
 
     def validate(self, data):
         """Cursory data check."""
@@ -124,7 +129,7 @@ class VMFirewallSerializer(serializers.Serializer):
         view_name='djcloudbridge:vm_firewall-detail',
         lookup_field='id',
         lookup_url_kwarg='pk',
-        parent_url_kwargs=['cloud_pk'])
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
     name = serializers.CharField(read_only=True)
     label = serializers.CharField(required=True)
     # Technically, the description is required but when wanting to reuse an
@@ -139,7 +144,7 @@ class VMFirewallSerializer(serializers.Serializer):
         view_name='djcloudbridge:vm_firewall_rule-list',
         lookup_field='id',
         lookup_url_kwarg='vm_firewall_pk',
-        parent_url_kwargs=['cloud_pk'])
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
 
     def create(self, validated_data):
         provider = view_helpers.get_cloud_provider(self.context.get('view'))
@@ -152,10 +157,10 @@ class VMFirewallSerializer(serializers.Serializer):
 class NetworkingSerializer(serializers.Serializer):
     networks = CustomHyperlinkedIdentityField(
         view_name='djcloudbridge:network-list',
-        parent_url_kwargs=['cloud_pk'])
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
     routers = CustomHyperlinkedIdentityField(
         view_name='djcloudbridge:router-list',
-        parent_url_kwargs=['cloud_pk'])
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
 
 
 class NetworkSerializer(serializers.Serializer):
@@ -164,7 +169,7 @@ class NetworkSerializer(serializers.Serializer):
         view_name='djcloudbridge:network-detail',
         lookup_field='id',
         lookup_url_kwarg='pk',
-        parent_url_kwargs=['cloud_pk'])
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
     name = serializers.CharField(read_only=True)
     label = serializers.CharField(required=True)
     state = serializers.CharField(read_only=True)
@@ -173,12 +178,12 @@ class NetworkSerializer(serializers.Serializer):
         view_name='djcloudbridge:subnet-list',
         lookup_field='id',
         lookup_url_kwarg='network_pk',
-        parent_url_kwargs=['cloud_pk'])
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
     gateways = CustomHyperlinkedIdentityField(
         view_name='djcloudbridge:gateway-list',
         lookup_field='id',
         lookup_url_kwarg='network_pk',
-        parent_url_kwargs=['cloud_pk'])
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
 
     def create(self, validated_data):
         provider = view_helpers.get_cloud_provider(self.context.get('view'))
@@ -203,25 +208,23 @@ class SubnetSerializer(serializers.Serializer):
         view_name='djcloudbridge:subnet-detail',
         lookup_field='id',
         lookup_url_kwarg='pk',
-        parent_url_kwargs=['cloud_pk', 'network_pk'])
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk', 'network_pk'])
     name = serializers.CharField(read_only=True)
     label = serializers.CharField(required=True)
     cidr_block = serializers.CharField()
     network_id = serializers.CharField(read_only=True)
     zone = PlacementZonePKRelatedField(
         label="Zone",
-        queryset='non_empty_value',
         display_fields=['id'],
         display_format="{0}",
-        required=True)
+        read_only=True)
 
     def create(self, validated_data):
         provider = view_helpers.get_cloud_provider(self.context.get('view'))
         net_id = self.context.get('view').kwargs.get('network_pk')
         return provider.networking.subnets.create(
             label=validated_data.get('label'), network=net_id,
-            cidr_block=validated_data.get('cidr_block'),
-            zone=validated_data.get('zone'))
+            cidr_block=validated_data.get('cidr_block'))
 
 
 class SubnetSerializerUpdate(SubnetSerializer):
@@ -242,7 +245,7 @@ class RouterSerializer(serializers.Serializer):
         view_name='djcloudbridge:router-detail',
         lookup_field='id',
         lookup_url_kwarg='pk',
-        parent_url_kwargs=['cloud_pk'])
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
     name = serializers.CharField(read_only=True)
     label = serializers.CharField(required=True)
     state = serializers.CharField(read_only=True)
@@ -272,22 +275,21 @@ class GatewaySerializer(serializers.Serializer):
         view_name='djcloudbridge:gateway-detail',
         lookup_field='id',
         lookup_url_kwarg='pk',
-        parent_url_kwargs=['cloud_pk', 'network_pk'])
-    name = serializers.CharField()
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk', 'network_pk'])
+    name = serializers.CharField(read_only=True)
     state = serializers.CharField(read_only=True)
     network_id = serializers.CharField(read_only=True)
     floating_ips = CustomHyperlinkedIdentityField(
         view_name='djcloudbridge:floating_ip-list',
         lookup_field='id',
         lookup_url_kwarg='gateway_pk',
-        parent_url_kwargs=['cloud_pk', 'network_pk'])
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk', 'network_pk'])
 
     def create(self, validated_data):
         provider = view_helpers.get_cloud_provider(self.context.get('view'))
         net_id = self.context.get('view').kwargs.get('network_pk')
         net = provider.networking.networks.get(net_id)
-        return net.gateways.get_or_create_inet_gateway(
-            name=validated_data.get('name'))
+        return net.gateways.get_or_create()
 
 
 class FloatingIPSerializer(serializers.Serializer):
@@ -301,7 +303,7 @@ class VMTypeSerializer(serializers.Serializer):
     url = CustomHyperlinkedIdentityField(
         view_name='djcloudbridge:vm_type-detail',
         lookup_field='pk',
-        parent_url_kwargs=['cloud_pk'])
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
     name = serializers.CharField()
     family = serializers.CharField()
     vcpus = serializers.CharField()
@@ -327,7 +329,7 @@ class AttachmentInfoSerializer(serializers.Serializer):
         view_name='djcloudbridge:instance-detail',
         lookup_field='instance_id',
         lookup_url_kwarg='pk',
-        parent_url_kwargs=['cloud_pk'])
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
 
 
 class VolumeSerializer(serializers.Serializer):
@@ -336,7 +338,7 @@ class VolumeSerializer(serializers.Serializer):
         view_name='djcloudbridge:volume-detail',
         lookup_field='id',
         lookup_url_kwarg='pk',
-        parent_url_kwargs=['cloud_pk'])
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
     name = serializers.CharField(read_only=True)
     label = serializers.CharField(required=True)
     description = serializers.CharField(allow_blank=True)
@@ -344,10 +346,9 @@ class VolumeSerializer(serializers.Serializer):
     create_time = serializers.CharField(read_only=True)
     zone_id = PlacementZonePKRelatedField(
         label="Zone",
-        queryset='non_empty_value',
         display_fields=['id'],
         display_format="{0}",
-        required=True)
+        read_only=True)
     state = serializers.CharField(read_only=True)
     snapshot_id = ProviderPKRelatedField(
         label="Snapshot ID",
@@ -366,7 +367,6 @@ class VolumeSerializer(serializers.Serializer):
             return provider.storage.volumes.create(
                 validated_data.get('label'),
                 validated_data.get('size'),
-                validated_data.get('zone_id'),
                 description=validated_data.get('description'),
                 snapshot=validated_data.get('snapshot_id'))
         except Exception as e:
@@ -389,7 +389,7 @@ class SnapshotSerializer(serializers.Serializer):
         view_name='djcloudbridge:snapshot-detail',
         lookup_field='id',
         lookup_url_kwarg='pk',
-        parent_url_kwargs=['cloud_pk'])
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
     name = serializers.CharField(read_only=True)
     label = serializers.CharField(required=True)
     description = serializers.CharField()
@@ -430,7 +430,7 @@ class InstanceSerializer(serializers.Serializer):
         view_name='djcloudbridge:instance-detail',
         lookup_field='id',
         lookup_url_kwarg='pk',
-        parent_url_kwargs=['cloud_pk'])
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
     name = serializers.CharField(read_only=True)
     label = serializers.CharField(required=True)
     public_ips = serializers.ListField(serializers.IPAddressField())
@@ -445,7 +445,7 @@ class InstanceSerializer(serializers.Serializer):
         view_name='djcloudbridge:vm_type-detail',
         lookup_field='vm_type_id',
         lookup_url_kwarg='pk',
-        parent_url_kwargs=['cloud_pk'])
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
     image_id = ProviderPKRelatedField(
         label="Image",
         queryset='compute.images',
@@ -456,7 +456,7 @@ class InstanceSerializer(serializers.Serializer):
         view_name='djcloudbridge:machine_image-detail',
         lookup_field='image_id',
         lookup_url_kwarg='pk',
-        parent_url_kwargs=['cloud_pk'])
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
     key_pair_id = ProviderPKRelatedField(
         label="Keypair",
         queryset='security.key_pairs',
@@ -470,10 +470,9 @@ class InstanceSerializer(serializers.Serializer):
         display_format="{1} ({0})")
     zone_id = PlacementZonePKRelatedField(
         label="Placement Zone",
-        queryset='non_empty_value',
         display_fields=['id'],
         display_format="{0}",
-        required=True)
+        read_only=True)
     vm_firewall_ids = ProviderPKRelatedField(
         label="VM Firewalls",
         queryset='security.vm_firewalls',
@@ -489,13 +488,12 @@ class InstanceSerializer(serializers.Serializer):
         image_id = validated_data.get('image_id')
         vm_type = validated_data.get('vm_type_id')
         kp_name = validated_data.get('key_pair_name')
-        zone_id = validated_data.get('zone_id')
         vm_firewall_ids = validated_data.get('vm_firewall_ids')
         subnet_id = validated_data.get('subnet_id')
         user_data = validated_data.get('user_data')
         try:
             return provider.compute.instances.create(
-                label, image_id, vm_type, subnet_id, zone_id,
+                label, image_id, vm_type, subnet_id,
                 key_pair=kp_name, vm_firewalls=vm_firewall_ids,
                 user_data=user_data)
         except Exception as e:
@@ -516,13 +514,13 @@ class BucketSerializer(serializers.Serializer):
         view_name='djcloudbridge:bucket-detail',
         lookup_field='id',
         lookup_url_kwarg='pk',
-        parent_url_kwargs=['cloud_pk'])
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
     name = serializers.CharField()
     objects = CustomHyperlinkedIdentityField(
         view_name='djcloudbridge:bucketobject-list',
         lookup_field='id',
         lookup_url_kwarg='bucket_pk',
-        parent_url_kwargs=['cloud_pk'])
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
 
     def create(self, validated_data):
         provider = view_helpers.get_cloud_provider(self.context.get('view'))
@@ -541,7 +539,7 @@ class BucketObjectSerializer(serializers.Serializer):
         view_name='djcloudbridge:bucketobject-detail',
         lookup_field='id',
         lookup_url_kwarg='pk',
-        parent_url_kwargs=['cloud_pk', 'bucket_pk'])
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk', 'bucket_pk'])
     download_url = serializers.SerializerMethodField()
     upload_content = serializers.FileField(write_only=True)
 
@@ -580,119 +578,144 @@ class BucketObjectSerializer(serializers.Serializer):
             raise serializers.ValidationError("{0}".format(e))
 
 
-class CloudSerializer(serializers.ModelSerializer):
-    slug = serializers.CharField(read_only=True)
+class CloudRegionListSerializer(serializers.ModelSerializer):
+    region_id = serializers.CharField(read_only=True)
+    name = serializers.CharField(allow_blank=False)
+    url = CloudRegionHyperlink(source="*")
+
+    class Meta:
+        model = models.Region
+        fields = ('region_id', 'cloud', 'name', 'url')
+
+
+class CloudZoneListSerializer(serializers.ModelSerializer):
+    zone_id = serializers.CharField(read_only=True)
+    name = serializers.CharField(allow_blank=False)
+    url = CloudZoneHyperlink(source="*")
+
+    class Meta:
+        model = models.Zone
+        fields = ('zone_id', 'region', 'name', 'url')
+
+
+class CloudRegionDetailSerializer(serializers.ModelSerializer):
+    region_id = serializers.CharField(read_only=True)
+    name = serializers.CharField(allow_blank=False)
+    zones = CloudZoneListSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = models.Region
+        exclude = ('polymorphic_ctype',)
+
+
+class CloudZoneSerializer(serializers.ModelSerializer):
+    zone_id = serializers.CharField(read_only=True)
+    name = serializers.CharField(allow_blank=False)
     compute = CustomHyperlinkedIdentityField(
         view_name='djcloudbridge:compute-list',
-        lookup_field='slug',
-        lookup_url_kwarg='cloud_pk')
+        lookup_field='zone_id',
+        lookup_url_kwarg='zone_pk',
+        parent_url_kwargs=['cloud_pk', 'region_pk'])
     security = CustomHyperlinkedIdentityField(
         view_name='djcloudbridge:security-list',
-        lookup_field='slug',
-        lookup_url_kwarg='cloud_pk')
+        lookup_field='zone_id',
+        lookup_url_kwarg='zone_pk',
+        parent_url_kwargs=['cloud_pk', 'region_pk'])
     storage = CustomHyperlinkedIdentityField(
         view_name='djcloudbridge:storage-list',
-        lookup_field='slug',
-        lookup_url_kwarg='cloud_pk')
+        lookup_field='zone_id',
+        lookup_url_kwarg='zone_pk',
+        parent_url_kwargs=['cloud_pk', 'region_pk'])
     networking = CustomHyperlinkedIdentityField(
         view_name='djcloudbridge:networking-list',
-        lookup_field='slug',
-        lookup_url_kwarg='cloud_pk')
-    region_name = serializers.SerializerMethodField()
-    cloud_type = serializers.SerializerMethodField()
-    extra_data = serializers.SerializerMethodField()
+        lookup_field='zone_id',
+        lookup_url_kwarg='zone_pk',
+        parent_url_kwargs=['cloud_pk', 'region_pk'])
 
-    def get_region_name(self, obj):
-        if hasattr(obj, 'aws'):
-            return obj.aws.region_name
-        elif hasattr(obj, 'openstack'):
-            return obj.openstack.region_name
-        elif hasattr(obj, 'azure'):
-            return obj.azure.region_name
-        elif hasattr(obj, 'gcp'):
-            return obj.gcp.region_name
-        else:
-            return "Cloud provider not recognized"
+    class Meta:
+        model = models.Zone
+        fields = ('zone_id', 'name', 'compute', 'security',
+                  'storage', 'networking')
 
-    def get_cloud_type(self, obj):
-        if hasattr(obj, 'aws'):
-            return 'aws'
-        elif hasattr(obj, 'openstack'):
-            return 'openstack'
-        elif hasattr(obj, 'azure'):
-            return 'azure'
-        elif hasattr(obj, 'gcp'):
-            return 'gcp'
-        else:
-            return 'unknown'
 
-    def get_extra_data(self, obj):
-        if hasattr(obj, 'aws'):
-            aws = obj.aws
-            return {'region_name': aws.region_name,
-                    'ec2_endpoint_url': aws.ec2_endpoint_url,
-                    'ec2_is_secure': aws.ec2_is_secure,
-                    'ec2_validate_certs': aws.ec2_validate_certs,
-                    's3_endpoint_url': aws.s3_endpoint_url,
-                    's3_is_secure': aws.s3_is_secure,
-                    's3_validate_certs': aws.s3_validate_certs
-                    }
-        elif hasattr(obj, 'openstack'):
-            os = obj.openstack
-            return {'auth_url': os.auth_url,
-                    'region_name': os.region_name,
-                    'identity_api_version': os.identity_api_version
-                    }
-        elif hasattr(obj, 'azure'):
-            azure = obj.azure
-            return {'region_name': azure.region_name}
-        elif hasattr(obj, 'gcp'):
-            gcp = obj.gcp
-            return {'region_name': gcp.region_name,
-                    'zone_name': gcp.zone_name
-                    }
-        else:
-            return {}
+class AWSRegionSerializer(CloudRegionDetailSerializer):
+    ec2_endpoint_url = serializers.CharField(allow_blank=True)
+    ec2_is_secure = serializers.BooleanField()
+    ec2_validate_certs = serializers.BooleanField()
+    s3_endpoint_url = serializers.CharField(allow_blank=True)
+    s3_is_secure = serializers.BooleanField()
+    s3_validate_certs = serializers.BooleanField()
+
+
+class CloudRegionPolymorphicSerializer(PolymorphicSerializer):
+    model_serializer_mapping = {
+        models.Region: CloudRegionDetailSerializer,
+        models.AWSRegion: AWSRegionSerializer,
+        models.AzureRegion: CloudRegionDetailSerializer,
+        models.GCPRegion: CloudRegionDetailSerializer,
+        models.OpenStackRegion: CloudRegionDetailSerializer
+    }
+
+
+class CloudSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(read_only=True)
+    name = serializers.CharField()
+    regions = CloudRegionListSerializer(many=True, read_only=True)
 
     class Meta:
         model = models.Cloud
-        exclude = ('kind',)
+        exclude = ('polymorphic_ctype',)
+
+
+class OpenStackCloudSerializer(CloudSerializer):
+    auth_url = serializers.CharField(allow_blank=True)
+    identity_api_version = serializers.BooleanField()
+
+
+class CloudPolymorphicSerializer(PolymorphicSerializer):
+    model_serializer_mapping = {
+        models.Cloud: CloudSerializer,
+        models.AWSCloud: CloudSerializer,
+        models.AzureCloud: CloudSerializer,
+        models.GCPCloud: CloudSerializer,
+        models.OpenStackCloud: OpenStackCloudSerializer
+    }
 
 
 class ComputeSerializer(serializers.Serializer):
     instances = CustomHyperlinkedIdentityField(
         view_name='djcloudbridge:instance-list',
-        parent_url_kwargs=['cloud_pk'])
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
     machine_images = CustomHyperlinkedIdentityField(
         view_name='djcloudbridge:machine_image-list',
-        parent_url_kwargs=['cloud_pk'])
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
     regions = CustomHyperlinkedIdentityField(
-        view_name='djcloudbridge:region-list',
-        parent_url_kwargs=['cloud_pk'])
+        view_name='djcloudbridge:compute_region-list',
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
     vm_types = CustomHyperlinkedIdentityField(
         view_name='djcloudbridge:vm_type-list',
-        parent_url_kwargs=['cloud_pk'])
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
 
 
 class SecuritySerializer(serializers.Serializer):
     keypairs = CustomHyperlinkedIdentityField(
         view_name='djcloudbridge:keypair-list',
-        parent_url_kwargs=['cloud_pk'])
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
     vm_firewalls = CustomHyperlinkedIdentityField(
         view_name='djcloudbridge:vm_firewall-list',
-        parent_url_kwargs=['cloud_pk'])
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
 
 
 class StorageSerializer(serializers.Serializer):
     volumes = CustomHyperlinkedIdentityField(
         view_name='djcloudbridge:volume-list',
-        parent_url_kwargs=['cloud_pk'])
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
     snapshots = CustomHyperlinkedIdentityField(
         view_name='djcloudbridge:snapshot-list',
-        parent_url_kwargs=['cloud_pk'])
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
     buckets = CustomHyperlinkedIdentityField(
         view_name='djcloudbridge:bucket-list',
-        parent_url_kwargs=['cloud_pk'])
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
 
 
 """
@@ -700,81 +723,75 @@ User Profile and Credentials related serializers
 """
 
 
-class CredentialsSerializer(serializers.Serializer):
-    aws = CustomHyperlinkedIdentityField(
-        view_name='djcloudbridge:awscredentials-list')
-    openstack = CustomHyperlinkedIdentityField(
-        view_name='djcloudbridge:openstackcredentials-list')
-    azure = CustomHyperlinkedIdentityField(
-        view_name='djcloudbridge:azurecredentials-list')
-    gcp = CustomHyperlinkedIdentityField(
-        view_name='djcloudbridge:gcpcredentials-list')
-
-
-class AWSCredsSerializer(serializers.HyperlinkedModelSerializer):
+class CredentialsSerializer(serializers.HyperlinkedModelSerializer):
     id = serializers.IntegerField(read_only=True)
+    default = serializers.BooleanField()
+    cloud_id = serializers.CharField(write_only=True)
+    cloud = CloudPolymorphicSerializer(read_only=True)
+
+    class Meta:
+        model = models.Credentials
+        exclude = ('polymorphic_ctype', 'user_profile')
+        extra_kwargs = {
+            'url': {'view_name': 'credentials-detail'},
+        }
+
+
+class AWSCredentialsSerializer(CredentialsSerializer):
     secret_key = serializers.CharField(
         style={'input_type': 'password'},
         write_only=True,
         required=False
     )
-    cloud_id = serializers.CharField(write_only=True)
-    cloud = CloudSerializer(read_only=True)
 
-    class Meta:
+    class Meta(CredentialsSerializer.Meta):
         model = models.AWSCredentials
-        exclude = ('user_profile',)
 
 
-class OpenstackCredsSerializer(serializers.HyperlinkedModelSerializer):
-    id = serializers.IntegerField(read_only=True)
-    password = serializers.CharField(
-        style={'input_type': 'password'},
-        write_only=True,
-        required=False
-    )
-    cloud_id = serializers.CharField(write_only=True)
-    cloud = CloudSerializer(read_only=True)
-
-    class Meta:
-        model = models.OpenStackCredentials
-        exclude = ('user_profile',)
-
-
-class AzureCredsSerializer(serializers.HyperlinkedModelSerializer):
-    id = serializers.IntegerField(read_only=True)
+class AzureCredentialsSerializer(CredentialsSerializer):
     secret = serializers.CharField(
         style={'input_type': 'password'},
         write_only=True,
         required=False
     )
-    cloud_id = serializers.CharField(write_only=True)
-    cloud = CloudSerializer(read_only=True)
 
-    class Meta:
+    class Meta(CredentialsSerializer.Meta):
         model = models.AzureCredentials
-        exclude = ('user_profile',)
 
 
-class GCPCredsSerializer(serializers.HyperlinkedModelSerializer):
-    id = serializers.IntegerField(read_only=True)
+class GCPCredentialsSerializer(CredentialsSerializer):
     credentials = serializers.CharField(
         write_only=True,
         style={'base_template': 'textarea.html', 'rows': 20},
     )
-    cloud_id = serializers.CharField(write_only=True)
-    cloud = CloudSerializer(read_only=True)
 
-    class Meta:
+    class Meta(CredentialsSerializer.Meta):
         model = models.GCPCredentials
-        exclude = ('user_profile',)
+
+
+class OpenStackCredentialsSerializer(CredentialsSerializer):
+    password = serializers.CharField(
+        style={'input_type': 'password'},
+        write_only=True,
+        required=False
+    )
+
+    class Meta(CredentialsSerializer.Meta):
+        model = models.OpenStackCredentials
+
+
+class CredentialsPolymorphicSerializer(PolymorphicSerializer, CredentialsSerializer):
+    model_serializer_mapping = {
+        models.Credentials: CredentialsSerializer,
+        models.AWSCredentials: AWSCredentialsSerializer,
+        models.AzureCredentials: AzureCredentialsSerializer,
+        models.GCPCredentials: GCPCredentialsSerializer,
+        models.OpenStackCredentials: OpenStackCredentialsSerializer,
+    }
 
 
 class CloudConnectionAuthSerializer(serializers.Serializer):
-    aws_creds = AWSCredsSerializer(write_only=True, required=False)
-    openstack_creds = OpenstackCredsSerializer(write_only=True, required=False)
-    azure_creds = AzureCredsSerializer(write_only=True, required=False)
-    gcp_creds = GCPCredsSerializer(write_only=True, required=False)
+    credentials = CredentialsPolymorphicSerializer(write_only=True, required=False)
     result = serializers.CharField(read_only=True)
     details = serializers.CharField(read_only=True)
 
@@ -788,62 +805,8 @@ class CloudConnectionAuthSerializer(serializers.Serializer):
 
 
 class UserSerializer(UserDetailsSerializer):
-    credentials = CustomHyperlinkedIdentityField(
-        view_name='djcloudbridge:credentialsroute-list', lookup_field=None)
-    aws_creds = serializers.SerializerMethodField()
-    openstack_creds = serializers.SerializerMethodField()
-    azure_creds = serializers.SerializerMethodField()
-    gcp_creds = serializers.SerializerMethodField()
-
-    def get_aws_creds(self, obj):
-        """
-        Include a URL for listing this bucket's contents
-        """
-        try:
-            creds = obj.userprofile.credentials.filter(
-                awscredentials__isnull=False).select_subclasses()
-            return AWSCredsSerializer(instance=creds, many=True,
-                                      context=self.context).data
-        except models.UserProfile.DoesNotExist:
-            return ""
-
-    def get_openstack_creds(self, obj):
-        """
-        Include a URL for listing this bucket's contents
-        """
-        try:
-            creds = obj.userprofile.credentials.filter(
-                openstackcredentials__isnull=False).select_subclasses()
-            return OpenstackCredsSerializer(instance=creds, many=True,
-                                            context=self.context).data
-        except models.UserProfile.DoesNotExist:
-            return ""
-
-    def get_azure_creds(self, obj):
-        """
-        Include a URL for listing this bucket's contents
-        """
-        try:
-            creds = obj.userprofile.credentials.filter(
-                azurecredentials__isnull=False).select_subclasses()
-            return AzureCredsSerializer(instance=creds, many=True,
-                                        context=self.context).data
-        except models.UserProfile.DoesNotExist:
-            return ""
-
-    def get_gcp_creds(self, obj):
-        """
-        Include a URL for listing this bucket's contents
-        """
-        try:
-            creds = obj.userprofile.credentials.filter(
-                gcpcredentials__isnull=False).select_subclasses()
-            return GCPCredsSerializer(instance=creds, many=True,
-                                      context=self.context).data
-        except models.UserProfile.DoesNotExist:
-            return ""
+    credentials = CredentialsPolymorphicSerializer(
+        many=True, source="userprofile.credentials")
 
     class Meta(UserDetailsSerializer.Meta):
-        fields = UserDetailsSerializer.Meta.fields + \
-            ('aws_creds', 'openstack_creds', 'azure_creds', 'gcp_creds',
-             'credentials')
+        fields = UserDetailsSerializer.Meta.fields + ('credentials',)

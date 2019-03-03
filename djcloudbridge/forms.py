@@ -11,7 +11,7 @@ class AWSCredentialsForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(AWSCredentialsForm, self).__init__(*args, **kwargs)
         # restrict choices to AWS clouds only
-        self.fields['cloud'].queryset = models.AWS.objects.all()
+        self.fields['cloud'].queryset = models.AWSCloud.objects.all()
 
     secret_key = forms.CharField(widget=PasswordInput(render_value=True),
                                  required=False)
@@ -26,7 +26,7 @@ class OpenStackCredentialsForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(OpenStackCredentialsForm, self).__init__(*args, **kwargs)
         # restrict choices to Openstack clouds only
-        self.fields['cloud'].queryset = models.OpenStack \
+        self.fields['cloud'].queryset = models.OpenStackCloud \
             .objects.all()
 
     password = forms.CharField(widget=PasswordInput(render_value=True),
@@ -42,7 +42,7 @@ class GCPCredentialsForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(GCPCredentialsForm, self).__init__(*args, **kwargs)
         # restrict choices to GCP clouds only
-        self.fields['cloud'].queryset = models.GCP.objects.all()
+        self.fields['cloud'].queryset = models.GCPCloud.objects.all()
 
     class Meta:
         model = models.GCPCredentials
@@ -54,7 +54,7 @@ class AzureCredentialsForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(AzureCredentialsForm, self).__init__(*args, **kwargs)
         # restrict choices to Azure clouds only
-        self.fields['cloud'].queryset = models.Azure \
+        self.fields['cloud'].queryset = models.AzureCloud \
             .objects.all()
 
     secret = forms.CharField(widget=PasswordInput(render_value=True),

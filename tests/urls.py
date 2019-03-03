@@ -6,6 +6,7 @@ from django.contrib import admin
 
 urlpatterns = [
     url(r'admin/', admin.site.urls),
+    url(r'profile/', include('djcloudbridge.profile.urls')),
     url(r'^', include('djcloudbridge.urls',
                       namespace='djcloudbridge')),
     url(r'_nested_admin/', include('nested_admin.urls')),
