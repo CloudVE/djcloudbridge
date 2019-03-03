@@ -99,15 +99,15 @@ class NetworkTests(BaseAuthenticatedAPITestCase):
 
 class InstanceTests(BaseAuthenticatedAPITestCase):
 
-    # INSTANCE_DATA = {
-    #     "label": "hello-world",
-    #     "vm_type_id": "m1.small",
-    #     "image_id": "ami-abc",
-    #     "key_pair_id": "cloudman_key_pair",
-    #     "subnet_id": "subnet-334",
-    #     "vm_firewall_ids": [],
-    #     "user_data": ""
-    # }
+    INSTANCE_DATA = {
+        "label": "hello-world",
+        "vm_type_id": "t2.nano",
+        "image_id": "ami-aa2ea6d0",
+        "key_pair_id": "cloudman_key_pair",
+        "subnet_id": None,
+        "vm_firewall_ids": [],
+        "user_data": ""
+    }
 
     def test_list_instances(self):
         """
@@ -118,10 +118,40 @@ class InstanceTests(BaseAuthenticatedAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertFalse(response.json()['results'])
 
-    # def test_create_instances(self):
-    #     """
-    #     Ensure we can create a new instance.
-    #     """
-    #     url = reverse('djcloudbridge:instance-list', args=self._get_url_args())
-    #     response = self.client.post(url, self.INSTANCE_DATA, format='json')
-    #     self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+    def test_create_instances(self):
+        """
+        Ensure we can create a new instance.
+        """
+        url = reverse('djcloudbridge:instance-list', args=self._get_url_args())
+        response = self.client.post(url, self.INSTANCE_DATA, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+
+class CredentialsTests(BaseAuthenticatedAPITestCase):
+
+    CREDENTIALS_DATA = {
+        "resourcetype": "AWSCredentials",
+        "name": "test",
+        "default": True,
+        "cloud_id": BaseAuthenticatedAPITestCase.CLOUD_DATA['id'],
+        "access_key": "new_dummy"
+    }
+
+    def test_list_creds(self):
+        """
+        Ensure we can create a new instance.
+        """
+        url = reverse('credentials-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # The credential s we created in the base class should be listed
+        self.assertEqual(response.json()['results'][0]['access_key'],
+                         'dummy_access_key')
+
+    def test_create_creds(self):
+        """
+        Ensure we can create a new instance.
+        """
+        url = reverse('credentials-list')
+        response = self.client.post(url, self.CREDENTIALS_DATA, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)

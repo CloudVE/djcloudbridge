@@ -467,7 +467,8 @@ class InstanceSerializer(serializers.Serializer):
         label="Subnet",
         queryset='networking.subnets',
         display_fields=['id', 'label'],
-        display_format="{1} ({0})")
+        display_format="{1} ({0})",
+        allow_null=True)
     zone_id = PlacementZonePKRelatedField(
         label="Placement Zone",
         display_fields=['id'],
