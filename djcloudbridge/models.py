@@ -169,13 +169,21 @@ class Zone(models.Model):
 
 
 class Credentials(PolymorphicModel, DateNameAwareModel):
+    user_profile = models.ForeignKey('UserProfile', models.CASCADE,
+                                     related_name='credentials')
+
+    def as_dict(self):
+        return {'id': self.id,
+                'name': self.name,
+                }
+
+
+class CloudCredentials(Credentials):
     default = models.BooleanField(
         help_text="If set, use as default credentials for the selected cloud",
         blank=True, default=False)
     cloud = models.ForeignKey('Cloud', models.CASCADE,
                               related_name='credentials')
-    user_profile = models.ForeignKey('UserProfile', models.CASCADE,
-                                     related_name='credentials')
 
     def save(self, *args, **kwargs):
         # Ensure only 1 set of credentials is selected as the 'default' for
@@ -183,13 +191,13 @@ class Credentials(PolymorphicModel, DateNameAwareModel):
         # This is not atomic but don't know how to enforce it at the
         # DB level directly.
         if self.default is True:
-            previous_default = Credentials.objects.filter(
+            previous_default = CloudCredentials.objects.filter(
                 cloud=self.cloud, default=True,
                 user_profile=self.user_profile).first()
             if previous_default:
                 previous_default.default = False
                 previous_default.save()
-        return super(Credentials, self).save()
+        return super(CloudCredentials, self).save()
 
     def as_dict(self):
         return {'id': self.id,
@@ -199,7 +207,7 @@ class Credentials(PolymorphicModel, DateNameAwareModel):
                 }
 
 
-class AWSCredentials(Credentials):
+class AWSCredentials(CloudCredentials):
     access_key = models.CharField(max_length=50, blank=False, null=False)
     secret_key = EncryptedCharField(max_length=50, blank=False, null=False)
 
@@ -214,7 +222,7 @@ class AWSCredentials(Credentials):
         return d
 
 
-class OpenStackCredentials(Credentials):
+class OpenStackCredentials(CloudCredentials):
     username = models.CharField(max_length=50, blank=False, null=False)
     password = EncryptedCharField(max_length=50, blank=False, null=False)
     project_name = models.CharField(max_length=50, blank=False, null=False)
@@ -239,7 +247,7 @@ class OpenStackCredentials(Credentials):
         return d
 
 
-class GCPCredentials(Credentials):
+class GCPCredentials(CloudCredentials):
     credentials = EncryptedTextField(blank=False, null=False)
 
     def save(self, *args, **kwargs):
@@ -264,7 +272,7 @@ class GCPCredentials(Credentials):
         return gcp_creds
 
 
-class AzureCredentials(Credentials):
+class AzureCredentials(CloudCredentials):
     subscription_id = models.CharField(max_length=50, blank=False, null=False)
     client_id = models.CharField(max_length=50, blank=False, null=False)
     secret = EncryptedCharField(max_length=50, blank=False, null=False)
