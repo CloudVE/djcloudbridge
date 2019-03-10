@@ -591,12 +591,14 @@ class CloudRegionListSerializer(serializers.ModelSerializer):
 
 class CloudZoneListSerializer(serializers.ModelSerializer):
     zone_id = serializers.CharField(read_only=True)
+    region_id = serializers.CharField(read_only=True, source="region.region_id")
+    cloud_id = serializers.CharField(read_only=True, source="region.cloud.id")
     name = serializers.CharField(allow_blank=False)
     url = CloudZoneHyperlink(source="*")
 
     class Meta:
         model = models.Zone
-        fields = ('zone_id', 'region', 'name', 'url')
+        fields = ('cloud_id', 'region_id', 'zone_id', 'region', 'name', 'url')
 
 
 class CloudRegionDetailSerializer(serializers.ModelSerializer):
@@ -611,6 +613,8 @@ class CloudRegionDetailSerializer(serializers.ModelSerializer):
 
 class CloudZoneSerializer(serializers.ModelSerializer):
     zone_id = serializers.CharField(read_only=True)
+    region_id = serializers.CharField(read_only=True, source="region.region_id")
+    cloud_id = serializers.CharField(read_only=True, source="region.cloud.id")
     name = serializers.CharField(allow_blank=False)
     compute = CustomHyperlinkedIdentityField(
         view_name='djcloudbridge:compute-list',
@@ -635,7 +639,7 @@ class CloudZoneSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Zone
-        fields = ('zone_id', 'name', 'compute', 'security',
+        fields = ('cloud_id', 'region_id', 'zone_id', 'name', 'compute', 'security',
                   'storage', 'networking')
 
 
