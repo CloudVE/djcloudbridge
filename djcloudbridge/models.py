@@ -155,7 +155,8 @@ class Zone(models.Model):
                             blank=True, null=True)
 
     def __str__(self):
-        return "{0} ({1})".format(self.name, self.zone_id)
+        region = self.region
+        return "{0}.{1}.{2}".format(region.cloud.id, region.region_id, self.zone_id)
 
     def save(self, *args, **kwargs):
         if not self.zone_id:
