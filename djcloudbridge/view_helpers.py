@@ -190,8 +190,8 @@ def get_credentials_by_id(cloud, request, credentials_id):
 
     if credentials_id:
         credentials = (profile.credentials
-                       .filter(cloud=cloud, id=credentials_id)
-                       .select_subclasses().first())
+                       .filter(cloudcredentials__cloud=cloud, id=credentials_id)
+                       .first())
         if credentials:
             return credentials.as_dict()
     return {}
@@ -213,11 +213,12 @@ def get_credentials_from_profile(cloud, request):
     profile = request.user.userprofile
 
     # Check for default credentials
-    credentials = profile.credentials.filter(cloud=cloud, default=True).first()
+    credentials = profile.credentials.filter(
+        cloudcredentials__cloud=cloud, cloudcredentials__default=True).first()
     if credentials:
         return credentials.as_dict()
     # Check for a set of credentials for the given cloud
-    credentials = profile.credentials.filter(cloud=cloud)
+    credentials = profile.credentials.filter(cloudcredentials__cloud=cloud)
     if not credentials:
         return {}
     if credentials.count() == 1:
