@@ -52,6 +52,7 @@ REQS_BASE = [
     'drf-nested-routers',
     'django-rest-auth',  # for user serialization
     'django-fernet-fields',  # for encryption of user cloud credentials
+    'sqlparse',  # For migrations
     'cloudbridge'
 ]
 

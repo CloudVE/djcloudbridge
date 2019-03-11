@@ -801,7 +801,13 @@ class CloudConnectionAuthSerializer(serializers.Serializer):
     details = serializers.CharField(read_only=True)
 
     def create(self, validated_data):
-        provider = view_helpers.get_cloud_provider(self.context.get('view'))
+        # When authenticating connections, we only receive the cloud_pk. Therefore.
+        # pick the first available zone for the cloud, since authentication is not
+        # dependent on zone.
+        cloud_id = self.context.get('view').kwargs['cloud_pk']
+        zone = models.Zone.objects.filter(region__cloud=cloud_id).first()
+        provider = view_helpers.get_cloud_provider(
+            self.context.get('view'), zone=zone)
         try:
             provider.authenticate()
             return {'result': 'SUCCESS'}

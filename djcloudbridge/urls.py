@@ -13,6 +13,8 @@ infra_router.register(r'clouds', views.CloudViewSet)
 cloud_router = HybridNestedRouter(infra_router, r'clouds', lookup='cloud')
 cloud_router.register(r'regions', views.CloudRegionViewSet,
                       base_name='cloud_region')
+cloud_router.register(r'authenticate', views.CloudConnectionTestViewSet,
+                      base_name='authenticate')
 
 cl_region_router = HybridNestedRouter(cloud_router, r'regions',
                                       lookup='region')
@@ -22,8 +24,6 @@ cl_region_router.register(r'zones', views.CloudZoneViewSet,
 cl_zone_router = HybridNestedRouter(cl_region_router, r'zones',
                                     lookup='zone')
 
-cl_zone_router.register(r'authenticate', views.CloudConnectionTestViewSet,
-                        base_name='authenticate')
 cl_zone_router.register(r'compute', views.ComputeViewSet,
                         base_name='compute')
 cl_zone_router.register(r'compute/machine_images', views.MachineImageViewSet,
