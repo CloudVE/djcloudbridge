@@ -45,11 +45,14 @@ readme = open('README.rst').read()
 history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 REQS_BASE = [
-    'django-model-utils>=3.0',
+    'django-polymorphic>=2.0.3',  # for polymorphic model support
+    'django-rest-polymorphic>=0.1.8',  # drf plugin for polymorphic models
+    'django-nested-admin>=3.0.21',  # for nested object editing in django admin
     'djangorestframework>=3.0.0',
     'drf-nested-routers',
     'django-rest-auth',  # for user serialization
     'django-fernet-fields',  # for encryption of user cloud credentials
+    'sqlparse',  # For migrations
     'cloudbridge'
 ]
 

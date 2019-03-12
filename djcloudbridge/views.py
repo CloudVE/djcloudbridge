@@ -35,7 +35,39 @@ class CloudViewSet(viewsets.ModelViewSet):
     API endpoint to view and or edit cloud infrastructure info.
     """
     queryset = models.Cloud.objects.all()
-    serializer_class = serializers.CloudSerializer
+    serializer_class = serializers.CloudPolymorphicSerializer
+
+
+class CloudRegionViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint to view and or edit cloud regions
+    """
+    queryset = models.Region.objects.all()
+    serializer_class = serializers.CloudRegionPolymorphicSerializer
+
+    def get_queryset(self):
+        return models.Region.objects.filter(cloud=self.kwargs['cloud_pk'])
+
+    def get_object(self):
+        return models.Region.objects.get(cloud=self.kwargs['cloud_pk'],
+                                         region_id=self.kwargs["pk"])
+
+
+class CloudZoneViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint to view and or edit cloud zones
+    """
+    queryset = models.Zone.objects.all()
+    serializer_class = serializers.CloudZoneSerializer
+
+    def get_queryset(self):
+        return models.Zone.objects.filter(region__cloud=self.kwargs['cloud_pk'],
+                                          region__region_id=self.kwargs['region_pk'])
+
+    def get_object(self):
+        return models.Zone.objects.get(region__cloud=self.kwargs['cloud_pk'],
+                                       region__region_id=self.kwargs['region_pk'],
+                                       zone_id=self.kwargs["pk"])
 
 
 class ComputeViewSet(drf_helpers.CustomReadOnlySingleViewSet):
@@ -46,13 +78,13 @@ class ComputeViewSet(drf_helpers.CustomReadOnlySingleViewSet):
     serializer_class = serializers.ComputeSerializer
 
 
-class RegionViewSet(drf_helpers.CustomReadOnlyModelViewSet):
+class ComputeRegionViewSet(drf_helpers.CustomReadOnlyModelViewSet):
     """
     List regions in a given cloud.
     """
     permission_classes = (IsAuthenticated,)
     # Required for the Browsable API renderer to have a nice form.
-    serializer_class = serializers.RegionSerializer
+    serializer_class = serializers.ComputeRegionSerializer
 
     def list_objects(self):
         provider = view_helpers.get_cloud_provider(self)
@@ -82,17 +114,17 @@ class MachineImageViewSet(drf_helpers.CustomModelViewSet):
         return obj
 
 
-class ZoneViewSet(drf_helpers.CustomReadOnlyModelViewSet):
+class ComputeZoneViewSet(drf_helpers.CustomReadOnlyModelViewSet):
     """
     List zones in a given cloud.
     """
     permission_classes = (IsAuthenticated,)
     # Required for the Browsable API renderer to have a nice form.
-    serializer_class = serializers.ZoneSerializer
+    serializer_class = serializers.ComputeZoneSerializer
 
     def list_objects(self):
         provider = view_helpers.get_cloud_provider(self)
-        region_pk = self.kwargs.get("region_pk")
+        region_pk = self.kwargs.get("compute_region_pk")
         region = provider.compute.regions.get(region_pk)
         if region:
             return region.zones
@@ -249,7 +281,7 @@ class GatewayViewSet(drf_helpers.CustomModelViewSet):
     def get_object(self):
         provider = view_helpers.get_cloud_provider(self)
         net = provider.networking.networks.get(self.kwargs['network_pk'])
-        obj = net.gateways.get_or_create_inet_gateway()
+        obj = net.gateways.get_or_create()
         return obj
 
 
@@ -282,7 +314,7 @@ class FloatingIPViewSet(drf_helpers.CustomModelViewSet):
         provider = view_helpers.get_cloud_provider(self)
         ips = []
         net = provider.networking.networks.get(self.kwargs['network_pk'])
-        gateway = net.gateways.get_or_create_inet_gateway()
+        gateway = net.gateways.get_or_create()
         for ip in gateway.floating_ips.list():
             if not ip.in_use:
                 ips.append({'id': ip.id, 'ip': ip.public_ip,
@@ -466,82 +498,20 @@ class BucketObjectViewSet(drf_helpers.CustomModelViewSet):
             raise Http404
 
 
-class CredentialsRouteViewSet(drf_helpers.CustomReadOnlySingleViewSet):
-    """
-    List compute related urls.
-    """
-    permission_classes = (IsAuthenticated,)
-    serializer_class = serializers.CredentialsSerializer
-
-
 class CredentialsViewSet(viewsets.ModelViewSet):
+
+    queryset = models.Credentials.objects.all()
+    permission_classes = (IsAuthenticated,)
+    serializer_class = serializers.CredentialsPolymorphicSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if hasattr(user, 'userprofile'):
+            return user.userprofile.credentials.all()
+        return models.Credentials.objects.none()
 
     def perform_create(self, serializer):
         if not hasattr(self.request.user, 'userprofile'):
             # Create a user profile if it does not exist
             models.UserProfile.objects.create(user=self.request.user)
         serializer.save(user_profile=self.request.user.userprofile)
-
-
-class AWSCredentialsViewSet(CredentialsViewSet):
-    """
-    API endpoint that allows AWS credentials to be viewed or edited.
-    """
-    queryset = models.AWSCredentials.objects.all()
-    serializer_class = serializers.AWSCredsSerializer
-    # permission_classes = [permissions.DjangoModelPermissions]
-
-    def get_queryset(self):
-        user = self.request.user
-        if hasattr(user, 'userprofile'):
-            return user.userprofile.credentials.filter(
-                awscredentials__isnull=False).select_subclasses()
-        return models.AWSCredentials.objects.none()
-
-
-class OpenstackCredentialsViewSet(CredentialsViewSet):
-    """
-    API endpoint that allows OpenStack credentials to be viewed or edited.
-    """
-    queryset = models.OpenStackCredentials.objects.all()
-    serializer_class = serializers.OpenstackCredsSerializer
-    # permission_classes = [permissions.DjangoModelPermissions]
-
-    def get_queryset(self):
-        user = self.request.user
-        if hasattr(user, 'userprofile'):
-            return user.userprofile.credentials.filter(
-                openstackcredentials__isnull=False).select_subclasses()
-        return models.OpenStackCredentials.objects.none()
-
-
-class AzureCredentialsViewSet(CredentialsViewSet):
-    """
-    API endpoint that allows Azure credentials to be viewed or edited.
-    """
-    queryset = models.AzureCredentials.objects.all()
-    serializer_class = serializers.AzureCredsSerializer
-    # permission_classes = [permissions.DjangoModelPermissions]
-
-    def get_queryset(self):
-        user = self.request.user
-        if hasattr(user, 'userprofile'):
-            return user.userprofile.credentials.filter(
-                azurecredentials__isnull=False).select_subclasses()
-        return models.AzureCredentials.objects.none()
-
-
-class GCPCredentialsViewSet(CredentialsViewSet):
-    """
-    API endpoint that allows GCP credentials to be viewed or edited.
-    """
-    queryset = models.GCPCredentials.objects.all()
-    serializer_class = serializers.GCPCredsSerializer
-    # permission_classes = [permissions.DjangoModelPermissions]
-
-    def get_queryset(self):
-        user = self.request.user
-        if hasattr(user, 'userprofile'):
-            return user.userprofile.credentials.filter(
-                gcpcredentials__isnull=False).select_subclasses()
-        return models.GCPCredentials.objects.none()

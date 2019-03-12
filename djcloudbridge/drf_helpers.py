@@ -11,7 +11,9 @@ from rest_framework import relations
 from rest_framework import serializers
 from rest_framework import viewsets
 from rest_framework.response import Response
+from rest_framework.reverse import reverse
 
+from . import models
 from . import util
 from . import view_helpers
 
@@ -328,3 +330,45 @@ class PlacementZonePKRelatedField(ProviderPKRelatedField):
             return zones[0]
         else:
             return ObjectDoesNotExist()
+
+
+class CloudRegionHyperlink(serializers.HyperlinkedRelatedField):
+    # We define these as class attributes, so we don't need to pass them as arguments.
+    view_name = 'djcloudbridge:cloud_region-detail'
+    queryset = models.Region.objects.all()
+
+    def get_url(self, obj, view_name, request, format):
+        url_kwargs = {
+            'cloud_pk': obj.cloud_id,
+            'pk': obj.region_id
+        }
+        return reverse(view_name, kwargs=url_kwargs, request=request, format=format)
+
+    def get_object(self, view_name, view_args, view_kwargs):
+        lookup_kwargs = {
+            'cloud_pk': view_kwargs['cloud_pk'],
+            'pk': view_kwargs['pk']
+        }
+        return self.get_queryset().get(**lookup_kwargs)
+
+
+class CloudZoneHyperlink(serializers.HyperlinkedRelatedField):
+    # We define these as class attributes, so we don't need to pass them as arguments.
+    view_name = 'djcloudbridge:cloud_zone-detail'
+    queryset = models.Zone.objects.all()
+
+    def get_url(self, obj, view_name, request, format):
+        url_kwargs = {
+            'cloud_pk': obj.region.cloud_id,
+            'region_pk': obj.region.region_id,
+            'pk': obj.zone_id
+        }
+        return reverse(view_name, kwargs=url_kwargs, request=request, format=format)
+
+    def get_object(self, view_name, view_args, view_kwargs):
+        lookup_kwargs = {
+            'cloud_pk': view_kwargs['cloud_pk'],
+            'region_pk': view_kwargs['region_pk'],
+            'pk': view_kwargs['pk']
+        }
+        return self.get_queryset().get(**lookup_kwargs)

@@ -4,19 +4,20 @@ from . import domain_model
 from . import models
 
 
-def get_cloud_provider(view, cloud_id=None):
+def get_cloud_provider(view, zone=None):
     """
     Returns a cloud provider for the current user. The relevant
     cloud is discovered from the view and the credentials are retrieved
     from the request or user profile. Return ``None`` if no credentials were
     retrieved.
     """
-    cloud_pk = cloud_id or view.kwargs.get("cloud_pk")
-    cloud = models.Cloud.objects.filter(
-        slug=cloud_pk).select_subclasses().first()
-
+    zone = zone or models.Zone.objects.filter(
+        region__cloud=view.kwargs['cloud_pk'],
+        region__region_id=view.kwargs['region_pk'],
+        zone_id=view.kwargs["zone_pk"]).first()
+    cloud = zone.region.cloud
     request_creds = get_credentials(cloud, view.request)
-    return domain_model.get_cloud_provider(cloud, request_creds)
+    return domain_model.get_cloud_provider(zone, request_creds)
 
 
 def get_credentials(cloud, request):
@@ -111,11 +112,7 @@ def get_credentials_from_request(cloud, request):
         return get_credentials_by_id(
             cloud, request, request.META.get('HTTP_CL_CREDENTIALS_ID'))
 
-    # In case a base class instance is sent in, attempt to retrieve the actual
-    # subclass.
-    if type(cloud) is models.Cloud:
-        cloud = models.Cloud.objects.get_subclass(slug=cloud.slug)
-    if isinstance(cloud, models.OpenStack):
+    if isinstance(cloud, models.OpenStackCloud):
         os_username = request.META.get('HTTP_CL_OS_USERNAME')
         os_password = request.META.get('HTTP_CL_OS_PASSWORD')
 
@@ -136,7 +133,7 @@ def get_credentials_from_request(cloud, request):
             return d
         else:
             return {}
-    elif isinstance(cloud, models.AWS):
+    elif isinstance(cloud, models.AWSCloud):
         aws_access_key = request.META.get('HTTP_CL_AWS_ACCESS_KEY')
         aws_secret_key = request.META.get('HTTP_CL_AWS_SECRET_KEY')
         if aws_access_key or aws_secret_key:
@@ -145,7 +142,7 @@ def get_credentials_from_request(cloud, request):
                     }
         else:
             return {}
-    elif isinstance(cloud, models.Azure):
+    elif isinstance(cloud, models.AzureCloud):
         azure_subscription_id = request.META.get(
             'HTTP_CL_AZURE_SUBSCRIPTION_ID')
         azure_client_id = request.META.get('HTTP_CL_AZURE_CLIENT_ID')
@@ -169,7 +166,7 @@ def get_credentials_from_request(cloud, request):
                     }
         else:
             return {}
-    elif isinstance(cloud, models.GCP):
+    elif isinstance(cloud, models.GCPCloud):
         gcp_credentials_json = request.META.get('HTTP_CL_GCP_CREDENTIALS_JSON')
 
         if gcp_credentials_json:
@@ -193,8 +190,8 @@ def get_credentials_by_id(cloud, request, credentials_id):
 
     if credentials_id:
         credentials = (profile.credentials
-                       .filter(cloud=cloud, id=credentials_id)
-                       .select_subclasses().first())
+                       .filter(cloudcredentials__cloud=cloud, id=credentials_id)
+                       .first())
         if credentials:
             return credentials.as_dict()
     return {}
@@ -216,12 +213,12 @@ def get_credentials_from_profile(cloud, request):
     profile = request.user.userprofile
 
     # Check for default credentials
-    credentials = profile.credentials.filter(cloud=cloud, default=True). \
-        select_subclasses().first()
+    credentials = profile.credentials.filter(
+        cloudcredentials__cloud=cloud, cloudcredentials__default=True).first()
     if credentials:
         return credentials.as_dict()
     # Check for a set of credentials for the given cloud
-    credentials = profile.credentials.filter(cloud=cloud).select_subclasses()
+    credentials = profile.credentials.filter(cloudcredentials__cloud=cloud)
     if not credentials:
         return {}
     if credentials.count() == 1:
