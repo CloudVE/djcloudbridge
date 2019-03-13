@@ -1,7 +1,7 @@
 from unittest.mock import patch
 
-from cloudbridge.cloud.factory import CloudProviderFactory
-from cloudbridge.cloud.factory import ProviderList
+from cloudbridge.factory import CloudProviderFactory
+from cloudbridge.factory import ProviderList
 
 from django.contrib.auth.models import User
 from django.urls import reverse

@@ -4,7 +4,7 @@ base model. This layer is separate from the view in that it does not deal
 with requests directly and only with model objects - thus making it
 reusable without a related web request.
 """
-from cloudbridge.cloud.factory import CloudProviderFactory, ProviderList
+from cloudbridge.factory import CloudProviderFactory, ProviderList
 
 from . import models
 

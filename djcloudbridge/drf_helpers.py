@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 
-from cloudbridge.cloud.interfaces.resources import CloudResource
+from cloudbridge.interfaces.resources import CloudResource
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.http.response import Http404

@@ -1,6 +1,6 @@
 import urllib
 
-from cloudbridge.cloud.interfaces.resources import TrafficDirection
+from cloudbridge.interfaces.resources import TrafficDirection
 
 from rest_auth.serializers import UserDetailsSerializer
 
