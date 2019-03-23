@@ -817,7 +817,7 @@ class CloudConnectionAuthSerializer(serializers.Serializer):
 
 class UserSerializer(UserDetailsSerializer):
     credentials = CredentialsPolymorphicSerializer(
-        many=True, source="userprofile.credentials")
+        many=True, source="userprofile.credentials", required=False)
 
     class Meta(UserDetailsSerializer.Meta):
         fields = UserDetailsSerializer.Meta.fields + ('credentials',)
