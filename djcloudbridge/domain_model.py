@@ -14,11 +14,15 @@ def get_cloud_provider(zone, cred_dict):
     Returns a provider for a cloud given a cloud model and a dictionary
     containing the relevant credentials.
 
-    :type cloud: Cloud
-    :param cloud: The cloud to create a provider for
+    :type zone: ``object`` of :class:`models.Zone`
+    :param zone: The cloud zone object in which to create the provider.
 
-    :rtype: ``object`` of :class:`.dict`
-    :return:  A dict containing the necessary credentials for the cloud.
+    :type cred_dict: ``object`` of :class:`.dict`
+    :param cred_dict: A dictionary with the credentials required to create the
+                      provider object.
+
+    :rtype: CloudProvider object
+    :return:  A CloudBridge cloud provider object.
     """
     region = zone.region
     cloud = region.cloud
