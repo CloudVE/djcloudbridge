@@ -250,6 +250,8 @@ class OpenStackCredentials(CloudCredentials):
 
 class GCPCredentials(CloudCredentials):
     credentials = EncryptedTextField(blank=False, null=False)
+    vm_default_username = models.CharField(max_length=100, blank=False,
+                                           null=False, default='cbuser')
 
     def save(self, *args, **kwargs):
         if self.credentials:
@@ -270,6 +272,7 @@ class GCPCredentials(CloudCredentials):
         gcp_creds = json.loads(self.credentials)
         # Overwrite with super values in case gcp_creds also has an id property
         gcp_creds.update(d)
+        gcp_creds['gcp_vm_default_username'] = self.vm_default_username
         return gcp_creds
 
 
