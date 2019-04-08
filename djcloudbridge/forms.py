@@ -13,8 +13,8 @@ class AWSCredentialsForm(ModelForm):
         # restrict choices to AWS clouds only
         self.fields['cloud'].queryset = models.AWSCloud.objects.all()
 
-    secret_key = forms.CharField(widget=PasswordInput(render_value=True),
-                                 required=False)
+    aws_secret_key = forms.CharField(widget=PasswordInput(render_value=True),
+                                     required=False)
 
     class Meta:
         model = models.AWSCredentials
@@ -29,8 +29,8 @@ class OpenStackCredentialsForm(ModelForm):
         self.fields['cloud'].queryset = models.OpenStackCloud \
             .objects.all()
 
-    password = forms.CharField(widget=PasswordInput(render_value=True),
-                               required=False)
+    os_password = forms.CharField(widget=PasswordInput(render_value=True),
+                                  required=False)
 
     class Meta:
         model = models.OpenStackCredentials
@@ -57,8 +57,8 @@ class AzureCredentialsForm(ModelForm):
         self.fields['cloud'].queryset = models.AzureCloud \
             .objects.all()
 
-    secret = forms.CharField(widget=PasswordInput(render_value=True),
-                             required=False)
+    azure_secret = forms.CharField(widget=PasswordInput(render_value=True),
+                                   required=False)
 
     class Meta:
         model = models.AzureCredentials

@@ -209,8 +209,8 @@ class CloudCredentials(Credentials):
 
 
 class AWSCredentials(CloudCredentials):
-    access_key = models.CharField(max_length=50, blank=False, null=False)
-    secret_key = EncryptedCharField(max_length=50, blank=False, null=False)
+    aws_access_key = models.CharField(max_length=50, blank=False, null=False)
+    aws_secret_key = EncryptedCharField(max_length=50, blank=False, null=False)
 
     class Meta:
         verbose_name = "AWS Credential"
@@ -218,18 +218,19 @@ class AWSCredentials(CloudCredentials):
 
     def to_dict(self):
         d = super(AWSCredentials, self).to_dict()
-        d['aws_access_key'] = self.access_key
-        d['aws_secret_key'] = self.secret_key
+        d['aws_access_key'] = self.aws_access_key
+        d['aws_secret_key'] = self.aws_secret_key
         return d
 
 
 class OpenStackCredentials(CloudCredentials):
-    username = models.CharField(max_length=50, blank=False, null=False)
-    password = EncryptedCharField(max_length=50, blank=False, null=False)
-    project_name = models.CharField(max_length=50, blank=False, null=False)
-    project_domain_name = models.CharField(max_length=50, blank=True,
+    os_username = models.CharField(max_length=50, blank=False, null=False)
+    os_password = EncryptedCharField(max_length=50, blank=False, null=False)
+    os_project_name = models.CharField(max_length=50, blank=False, null=False)
+    os_project_domain_name = models.CharField(max_length=50, blank=True,
+                                              null=True)
+    os_user_domain_name = models.CharField(max_length=50, blank=True,
                                            null=True)
-    user_domain_name = models.CharField(max_length=50, blank=True, null=True)
 
     class Meta:
         verbose_name = "OpenStack Credential"
@@ -237,20 +238,20 @@ class OpenStackCredentials(CloudCredentials):
 
     def to_dict(self):
         d = super(OpenStackCredentials, self).to_dict()
-        d['os_username'] = self.username
-        d['os_password'] = self.password
+        d['os_username'] = self.os_username
+        d['os_password'] = self.os_password
         if self.project_name:
-            d['os_project_name'] = self.project_name
+            d['os_project_name'] = self.os_project_name
         if self.project_domain_name:
-            d['os_project_domain_name'] = self.project_domain_name
+            d['os_project_domain_name'] = self.os_project_domain_name
         if self.user_domain_name:
-            d['os_user_domain_name'] = self.user_domain_name
+            d['os_user_domain_name'] = self.os_user_domain_name
         return d
 
 
 class GCPCredentials(CloudCredentials):
     credentials = EncryptedTextField(blank=False, null=False)
-    vm_default_username = models.CharField(max_length=100, blank=False,
+    gcp_vm_default_username = models.CharField(max_length=100, blank=False,
                                            null=False, default='cbuser')
 
     def save(self, *args, **kwargs):
@@ -268,25 +269,24 @@ class GCPCredentials(CloudCredentials):
         verbose_name_plural = "GCP Credentials"
 
     def to_dict(self):
-        d = super(GCPCredentials, self).to_dict()
-        gcp_creds = json.loads(self.credentials)
-        # Overwrite with super values in case gcp_creds also has an id property
-        gcp_creds.update(d)
-        gcp_creds['gcp_vm_default_username'] = self.vm_default_username
+        gcp_creds = super(GCPCredentials, self).to_dict()
+        gcp_creds['credentials'] = json.loads(self.credentials)
+        gcp_creds['gcp_vm_default_username'] = self.gcp_vm_default_username
         return gcp_creds
 
 
 class AzureCredentials(CloudCredentials):
-    subscription_id = models.CharField(max_length=50, blank=False, null=False)
-    client_id = models.CharField(max_length=50, blank=False, null=False)
-    secret = EncryptedCharField(max_length=50, blank=False, null=False)
-    tenant = models.CharField(max_length=50, blank=True, null=True)
-    resource_group = models.CharField(max_length=64, blank=False, null=False,
-                                      default='cloudbridge')
-    storage_account = models.CharField(max_length=24, blank=False, null=False,
-                                       default='cbstorage')
-    vm_default_username = models.CharField(max_length=100, blank=False,
-                                           null=False, default='cbuser')
+    azure_subscription_id = models.CharField(max_length=50, blank=False,
+                                             null=False)
+    azure_client_id = models.CharField(max_length=50, blank=False, null=False)
+    azure_secret = EncryptedCharField(max_length=50, blank=False, null=False)
+    azure_tenant = models.CharField(max_length=50, blank=True, null=True)
+    azure_resource_group = models.CharField(max_length=64, blank=False,
+                                            null=False, default='cloudbridge')
+    azure_storage_account = models.CharField(max_length=24, blank=False,
+                                             null=False, default='cbstorage')
+    azure_vm_default_username = models.CharField(max_length=100, blank=False,
+                                                 null=False, default='cbuser')
 
     class Meta:
         verbose_name = "Azure Credential"
@@ -294,13 +294,13 @@ class AzureCredentials(CloudCredentials):
 
     def to_dict(self):
         d = super(AzureCredentials, self).to_dict()
-        d['azure_subscription_id'] = self.subscription_id
-        d['azure_client_id'] = self.client_id
-        d['azure_secret'] = self.secret
-        d['azure_tenant'] = self.tenant
-        d['azure_resource_group'] = self.resource_group
-        d['azure_storage_account'] = self.storage_account
-        d['azure_vm_default_username'] = self.vm_default_username
+        d['azure_subscription_id'] = self.azure_subscription_id
+        d['azure_client_id'] = self.azure_client_id
+        d['azure_secret'] = self.azure_secret
+        d['azure_tenant'] = self.azure_tenant
+        d['azure_resource_group'] = self.azure_resource_group
+        d['azure_storage_account'] = self.azure_storage_account
+        d['azure_vm_default_username'] = self.azure_vm_default_username
         return d
 
 

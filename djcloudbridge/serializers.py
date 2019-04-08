@@ -743,7 +743,7 @@ class CredentialsSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class AWSCredentialsSerializer(CredentialsSerializer):
-    secret_key = serializers.CharField(
+    aws_secret_key = serializers.CharField(
         style={'input_type': 'password'},
         write_only=True,
         required=False
@@ -754,7 +754,7 @@ class AWSCredentialsSerializer(CredentialsSerializer):
 
 
 class AzureCredentialsSerializer(CredentialsSerializer):
-    secret = serializers.CharField(
+    azure_secret = serializers.CharField(
         style={'input_type': 'password'},
         write_only=True,
         required=False
@@ -775,7 +775,7 @@ class GCPCredentialsSerializer(CredentialsSerializer):
 
 
 class OpenStackCredentialsSerializer(CredentialsSerializer):
-    password = serializers.CharField(
+    os_password = serializers.CharField(
         style={'input_type': 'password'},
         write_only=True,
         required=False
