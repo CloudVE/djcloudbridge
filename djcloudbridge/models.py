@@ -173,7 +173,7 @@ class Credentials(PolymorphicModel, DateNameAwareModel):
     user_profile = models.ForeignKey('UserProfile', models.CASCADE,
                                      related_name='credentials')
 
-    def as_dict(self):
+    def to_dict(self):
         return {'id': self.id,
                 'name': self.name,
                 }
@@ -200,7 +200,7 @@ class CloudCredentials(Credentials):
                 previous_default.save()
         return super(CloudCredentials, self).save()
 
-    def as_dict(self):
+    def to_dict(self):
         return {'id': self.id,
                 'name': self.name,
                 'default': self.default,
@@ -216,8 +216,8 @@ class AWSCredentials(CloudCredentials):
         verbose_name = "AWS Credential"
         verbose_name_plural = "AWS Credentials"
 
-    def as_dict(self):
-        d = super(AWSCredentials, self).as_dict()
+    def to_dict(self):
+        d = super(AWSCredentials, self).to_dict()
         d['aws_access_key'] = self.access_key
         d['aws_secret_key'] = self.secret_key
         return d
@@ -235,8 +235,8 @@ class OpenStackCredentials(CloudCredentials):
         verbose_name = "OpenStack Credential"
         verbose_name_plural = "OpenStack Credentials"
 
-    def as_dict(self):
-        d = super(OpenStackCredentials, self).as_dict()
+    def to_dict(self):
+        d = super(OpenStackCredentials, self).to_dict()
         d['os_username'] = self.username
         d['os_password'] = self.password
         if self.project_name:
@@ -267,8 +267,8 @@ class GCPCredentials(CloudCredentials):
         verbose_name = "GCP Credential"
         verbose_name_plural = "GCP Credentials"
 
-    def as_dict(self):
-        d = super(GCPCredentials, self).as_dict()
+    def to_dict(self):
+        d = super(GCPCredentials, self).to_dict()
         gcp_creds = json.loads(self.credentials)
         # Overwrite with super values in case gcp_creds also has an id property
         gcp_creds.update(d)
@@ -292,8 +292,8 @@ class AzureCredentials(CloudCredentials):
         verbose_name = "Azure Credential"
         verbose_name_plural = "Azure Credentials"
 
-    def as_dict(self):
-        d = super(AzureCredentials, self).as_dict()
+    def to_dict(self):
+        d = super(AzureCredentials, self).to_dict()
         d['azure_subscription_id'] = self.subscription_id
         d['azure_client_id'] = self.client_id
         d['azure_secret'] = self.secret

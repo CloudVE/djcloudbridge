@@ -193,7 +193,7 @@ def get_credentials_by_id(cloud, request, credentials_id):
                        .filter(cloudcredentials__cloud=cloud, id=credentials_id)
                        .first())
         if credentials:
-            return credentials.as_dict()
+            return credentials.to_dict()
     return {}
 
 
@@ -216,12 +216,12 @@ def get_credentials_from_profile(cloud, request):
     credentials = profile.credentials.filter(
         cloudcredentials__cloud=cloud, cloudcredentials__default=True).first()
     if credentials:
-        return credentials.as_dict()
+        return credentials.to_dict()
     # Check for a set of credentials for the given cloud
     credentials = profile.credentials.filter(cloudcredentials__cloud=cloud)
     if not credentials:
         return {}
     if credentials.count() == 1:
-        return credentials[0].as_dict()
+        return credentials[0].to_dict()
     else:
         raise ValueError("Too many credentials to choose from.")
