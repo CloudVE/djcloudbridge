@@ -168,9 +168,13 @@ def get_credentials_from_request(cloud, request):
             return {}
     elif isinstance(cloud, models.GCPCloud):
         gcp_credentials_json = request.META.get('HTTP_CL_GCP_CREDENTIALS_JSON')
+        gcp_vm_default_username = request.META.get(
+            'HTTP_CL_GCP_VM_DEFAULT_USERNAME')
 
         if gcp_credentials_json:
-            return json.loads(gcp_credentials_json)
+            return {'credentials': json.loads(gcp_credentials_json),
+                    'gcp_vm_default_username': gcp_vm_default_username
+                    }
         else:
             return {}
     else:
