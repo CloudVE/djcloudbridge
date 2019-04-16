@@ -270,7 +270,7 @@ class GCPCredentials(CloudCredentials):
 
     def to_dict(self):
         gcp_creds = super(GCPCredentials, self).to_dict()
-        gcp_creds['credentials'] = json.loads(self.credentials)
+        gcp_creds['gcp_service_creds_dict'] = json.loads(self.credentials)
         gcp_creds['gcp_vm_default_username'] = self.gcp_vm_default_username
         return gcp_creds
 

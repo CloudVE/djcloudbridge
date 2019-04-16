@@ -96,7 +96,7 @@ def get_credentials_from_dict(payload):
                  'azure_vm_default_username': payload.pop(
                      'azure_vm_default_username')}
     elif 'gcp_service_creds_dict' in payload:
-        creds = payload['gcp_service_creds_dict']
+        creds = {'gcp_service_creds_dict': payload['gcp_service_creds_dict']}
     else:
         raise Exception("Unrecognized or unmatched credentials: %s" % payload)
     return {'credentials': creds,
@@ -172,7 +172,7 @@ def get_credentials_from_request(cloud, request):
             'HTTP_CL_GCP_VM_DEFAULT_USERNAME')
 
         if gcp_credentials_json:
-            return {'credentials': json.loads(gcp_credentials_json),
+            return {'gcp_service_creds_dict': json.loads(gcp_credentials_json),
                     'gcp_vm_default_username': gcp_vm_default_username
                     }
         else:

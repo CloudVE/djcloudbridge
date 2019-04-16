@@ -53,8 +53,7 @@ def get_cloud_provider(zone, cred_dict):
         return CloudProviderFactory().create_provider(ProviderList.AZURE,
                                                       config)
     elif isinstance(cloud, models.GCPCloud):
-        config = {'gcp_service_creds_dict': cred_dict,
-                  'gcp_region_name': region.name,
+        config = {'gcp_region_name': region.name,
                   'gcp_zone_name': zone.name}
         config.update(cred_dict or {})
         return CloudProviderFactory().create_provider(ProviderList.GCP,
