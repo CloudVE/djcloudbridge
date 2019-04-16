@@ -240,11 +240,11 @@ class OpenStackCredentials(CloudCredentials):
         d = super(OpenStackCredentials, self).to_dict()
         d['os_username'] = self.os_username
         d['os_password'] = self.os_password
-        if self.project_name:
+        if self.os_project_name:
             d['os_project_name'] = self.os_project_name
-        if self.project_domain_name:
+        if self.os_project_domain_name:
             d['os_project_domain_name'] = self.os_project_domain_name
-        if self.user_domain_name:
+        if self.os_user_domain_name:
             d['os_user_domain_name'] = self.os_user_domain_name
         return d
 
