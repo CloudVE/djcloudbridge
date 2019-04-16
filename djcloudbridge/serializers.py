@@ -765,7 +765,7 @@ class AzureCredentialsSerializer(CredentialsSerializer):
 
 
 class GCPCredentialsSerializer(CredentialsSerializer):
-    credentials = serializers.CharField(
+    gcp_service_creds_dict = serializers.CharField(
         write_only=True,
         style={'base_template': 'textarea.html', 'rows': 20},
     )

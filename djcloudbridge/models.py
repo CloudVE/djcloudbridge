@@ -250,14 +250,14 @@ class OpenStackCredentials(CloudCredentials):
 
 
 class GCPCredentials(CloudCredentials):
-    credentials = EncryptedTextField(blank=False, null=False)
+    gcp_service_creds_dict = EncryptedTextField(blank=False, null=False)
     gcp_vm_default_username = models.CharField(max_length=100, blank=False,
                                            null=False, default='cbuser')
 
     def save(self, *args, **kwargs):
-        if self.credentials:
+        if self.gcp_service_creds_dict:
             try:
-                json.loads(self.credentials)
+                json.loads(self.gcp_service_creds_dict)
             except Exception as e:
                 raise Exception("Invalid JSON syntax. GCP Credentials must be"
                                 " in JSON format. Cause: {0}".format(e))
@@ -270,7 +270,7 @@ class GCPCredentials(CloudCredentials):
 
     def to_dict(self):
         gcp_creds = super(GCPCredentials, self).to_dict()
-        gcp_creds['gcp_service_creds_dict'] = json.loads(self.credentials)
+        gcp_creds['gcp_service_creds_dict'] = json.loads(self.gcp_service_creds_dict)
         gcp_creds['gcp_vm_default_username'] = self.gcp_vm_default_username
         return gcp_creds
 
