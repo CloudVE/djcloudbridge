@@ -252,7 +252,7 @@ class OpenStackCredentials(CloudCredentials):
 class GCPCredentials(CloudCredentials):
     gcp_service_creds_dict = EncryptedTextField(blank=False, null=False)
     gcp_vm_default_username = models.CharField(max_length=100, blank=False,
-                                           null=False, default='cbuser')
+                                               null=False, default='cbuser')
 
     def save(self, *args, **kwargs):
         if self.gcp_service_creds_dict:

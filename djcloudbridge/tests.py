@@ -134,7 +134,7 @@ class CredentialsTests(BaseAuthenticatedAPITestCase):
         "name": "test",
         "default": True,
         "cloud_id": BaseAuthenticatedAPITestCase.CLOUD_DATA['id'],
-        "access_key": "new_dummy"
+        "aws_access_key": "new_dummy"
     }
 
     def test_list_creds(self):
@@ -145,7 +145,7 @@ class CredentialsTests(BaseAuthenticatedAPITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # The credential s we created in the base class should be listed
-        self.assertEqual(response.json()['results'][0]['access_key'],
+        self.assertEqual(response.json()['results'][0]['aws_access_key'],
                          'dummy_access_key')
 
     def test_create_creds(self):
