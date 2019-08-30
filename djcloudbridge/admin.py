@@ -108,3 +108,6 @@ class AzureCredsInline(admin.StackedInline):
 @admin.register(models.UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
     inlines = [AWSCredsInline, OSCredsInline, AzureCredsInline, GCPCredsInline]
+    ordering = ['user']
+    search_fields = ['slug', 'user__username', 'user__first_name',
+                     'user__last_name']

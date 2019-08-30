@@ -92,7 +92,7 @@ class Region(PolymorphicModel):
         help_text="This is the id for the region and is used in the ReST url.")
 
     def __str__(self):
-        return "{0} ({1})".format(self.name, self.region_id)
+        return "{0} ({1})".format(self.name, self.cloud.name)
 
     def save(self, *args, **kwargs):
         if not self.region_id:
