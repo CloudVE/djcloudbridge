@@ -58,6 +58,11 @@ cl_zone_router.register(r'storage/snapshots', views.SnapshotViewSet,
 cl_zone_router.register(r'storage/buckets', views.BucketViewSet,
                         base_name='bucket')
 
+cl_zone_router.register(r'dns', views.DnsViewSet,
+                        base_name='dns')
+cl_zone_router.register(r'dns/dns_zones', views.DnsZoneViewSet,
+                        base_name='dns_zone')
+
 
 compute_region_router = HybridNestedRouter(cl_zone_router, r'compute/regions',
                                            lookup='compute_region')
@@ -85,6 +90,11 @@ bucket_router = HybridNestedRouter(cl_zone_router, r'storage/buckets',
 bucket_router.register(r'objects', views.BucketObjectViewSet,
                        base_name='bucketobject')
 
+dns_router = HybridNestedRouter(cl_zone_router, r'dns/dns_zones',
+                                lookup='dns_zone')
+dns_router.register(r'records', views.DnsRecordViewSet,
+                    base_name='dns_record')
+
 infrastructure_regex_pattern = r''
 
 app_name = "djcloudbridge"
@@ -99,4 +109,5 @@ urlpatterns = [
     url(infrastructure_regex_pattern, include(network_router.urls)),
     url(infrastructure_regex_pattern, include(gateway_router.urls)),
     url(infrastructure_regex_pattern, include(bucket_router.urls)),
+    url(infrastructure_regex_pattern, include(dns_router.urls)),
 ]

@@ -433,8 +433,10 @@ class InstanceSerializer(serializers.Serializer):
         parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
     name = serializers.CharField(read_only=True)
     label = serializers.CharField(required=True)
-    public_ips = serializers.ListField(serializers.IPAddressField())
-    private_ips = serializers.ListField(serializers.IPAddressField())
+    public_ips = serializers.ListField(child=serializers.IPAddressField(),
+                                       allow_empty=True, required=False)
+    private_ips = serializers.ListField(child=serializers.IPAddressField(),
+                                        allow_empty=True, required=False)
     vm_type_id = ProviderPKRelatedField(
         label="Instance Type",
         queryset='compute.vm_types',
@@ -579,6 +581,56 @@ class BucketObjectSerializer(serializers.Serializer):
             raise serializers.ValidationError("{0}".format(e))
 
 
+class DnsZoneSerializer(serializers.Serializer):
+    id = serializers.CharField(read_only=True)
+    url = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:dns_zone-detail',
+        lookup_field='id',
+        lookup_url_kwarg='pk',
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
+    name = serializers.CharField()
+    admin_email = serializers.CharField()
+    records = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:dns_record-list',
+        lookup_field='id',
+        lookup_url_kwarg='dns_zone_pk',
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
+
+    def create(self, validated_data):
+        provider = view_helpers.get_cloud_provider(self.context.get('view'))
+        try:
+            return provider.dns.host_zones.create(
+                validated_data.get('name'), validated_data.get('admin_email'))
+        except Exception as e:
+            raise serializers.ValidationError("{0}".format(e))
+
+
+class DnsRecordSerializer(serializers.Serializer):
+    id = serializers.CharField(read_only=True)
+    name = serializers.CharField(allow_blank=True)
+    type = serializers.CharField()
+    ttl = serializers.IntegerField(allow_null=True)
+    data = serializers.ListField(child=serializers.CharField())
+    url = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:dns_record-detail',
+        lookup_field='id',
+        lookup_url_kwarg='pk',
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk', 'dns_zone_pk'])
+
+    def create(self, validated_data):
+        provider = view_helpers.get_cloud_provider(self.context.get('view'))
+        dns_zone_id = self.context.get('view').kwargs.get('dns_zone_pk')
+        dns_zone = provider.dns.host_zones.get(dns_zone_id)
+        try:
+            name = validated_data.get('name') or dns_zone.name
+            rec_type = validated_data.get('type')
+            ttl = validated_data.get('ttl')
+            data = validated_data.get('data')
+            return dns_zone.records.create(name, rec_type, data, ttl=ttl)
+        except Exception as e:
+            raise serializers.ValidationError("{0}".format(e))
+
+
 class CloudRegionListSerializer(serializers.ModelSerializer):
     region_id = serializers.CharField(read_only=True)
     name = serializers.CharField(allow_blank=False)
@@ -636,11 +688,16 @@ class CloudZoneSerializer(serializers.ModelSerializer):
         lookup_field='zone_id',
         lookup_url_kwarg='zone_pk',
         parent_url_kwargs=['cloud_pk', 'region_pk'])
+    dns = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:dns-list',
+        lookup_field='zone_id',
+        lookup_url_kwarg='zone_pk',
+        parent_url_kwargs=['cloud_pk', 'region_pk'])
 
     class Meta:
         model = models.Zone
         fields = ('cloud_id', 'region_id', 'zone_id', 'name', 'compute', 'security',
-                  'storage', 'networking')
+                  'storage', 'networking', 'dns')
 
 
 class AWSRegionSerializer(CloudRegionDetailSerializer):
@@ -720,6 +777,12 @@ class StorageSerializer(serializers.Serializer):
         parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
     buckets = CustomHyperlinkedIdentityField(
         view_name='djcloudbridge:bucket-list',
+        parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
+
+
+class DnsSerializer(serializers.Serializer):
+    dns_zones = CustomHyperlinkedIdentityField(
+        view_name='djcloudbridge:dns_zone-list',
         parent_url_kwargs=['cloud_pk', 'region_pk', 'zone_pk'])
 
 

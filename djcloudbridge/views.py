@@ -515,3 +515,56 @@ class CredentialsViewSet(viewsets.ModelViewSet):
             # Create a user profile if it does not exist
             models.UserProfile.objects.create(user=self.request.user)
         serializer.save(user_profile=self.request.user.userprofile)
+
+
+class DnsViewSet(drf_helpers.CustomReadOnlySingleViewSet):
+    """
+    List dns urls.
+    """
+    permission_classes = (IsAuthenticated,)
+    serializer_class = serializers.DnsSerializer
+
+
+class DnsZoneViewSet(drf_helpers.CustomModelViewSet):
+    """
+    List dns zones in a given cloud.
+    """
+    permission_classes = (IsAuthenticated,)
+    serializer_class = serializers.DnsZoneSerializer
+
+    def list_objects(self):
+        provider = view_helpers.get_cloud_provider(self)
+        return provider.dns.host_zones.list()
+
+    def get_object(self):
+        provider = view_helpers.get_cloud_provider(self)
+        obj = provider.dns.host_zones.get(self.kwargs["pk"])
+        return obj
+
+
+class DnsRecordViewSet(drf_helpers.CustomModelViewSet):
+    """
+    List records in a given dns zone.
+    """
+    permission_classes = (IsAuthenticated,)
+    # Required for the Browsable API renderer to have a nice form.
+    serializer_class = serializers.DnsRecordSerializer
+    lookup_value_regex = '[^/]+'
+
+    def list_objects(self):
+        provider = view_helpers.get_cloud_provider(self)
+        dns_zone_pk = self.kwargs.get("dns_zone_pk")
+        dns_zone = provider.dns.host_zones.get(dns_zone_pk)
+        if dns_zone:
+            return dns_zone.records.list()
+        else:
+            raise Http404
+
+    def get_object(self):
+        provider = view_helpers.get_cloud_provider(self)
+        dns_zone_pk = self.kwargs.get("dns_zone_pk")
+        dns_zone = provider.dns.host_zones.get(dns_zone_pk)
+        if dns_zone:
+            return dns_zone.records.get(self.kwargs["pk"])
+        else:
+            raise Http404

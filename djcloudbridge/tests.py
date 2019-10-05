@@ -139,12 +139,12 @@ class CredentialsTests(BaseAuthenticatedAPITestCase):
 
     def test_list_creds(self):
         """
-        Ensure we can create a new instance.
+        Ensure we can list a new instance.
         """
         url = reverse('credentials-list')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # The credential s we created in the base class should be listed
+        # The credentials we created in the base class should be listed
         self.assertEqual(response.json()['results'][0]['aws_access_key'],
                          'dummy_access_key')
 
@@ -155,3 +155,57 @@ class CredentialsTests(BaseAuthenticatedAPITestCase):
         url = reverse('credentials-list')
         response = self.client.post(url, self.CREDENTIALS_DATA, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+
+class DnsZoneTests(BaseAuthenticatedAPITestCase):
+
+    DNS_ZONE_DATA = {
+        "name": "cloudbridge.com",
+        "admin_email": "admin@cb.com"
+    }
+
+    def test_list_zones(self):
+        """
+        Ensure we can list a new zone.
+        """
+        url = reverse('djcloudbridge:dns_zone-list', args=self._get_url_args())
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(response.json()['results'])
+
+    def test_create_zone(self):
+        """
+        Ensure we can create a new zone.
+        """
+        url = reverse('djcloudbridge:dns_zone-list', args=self._get_url_args())
+        response = self.client.post(url, self.DNS_ZONE_DATA, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+
+# class DnsRecordTests(BaseAuthenticatedAPITestCase):
+#
+#     DNS_ZONE_DATA = {
+#         "name": "cloudbridge.com",
+#         "admin_email": "admin@cb.com"
+#     }
+#
+#     DNS_RECORD_DATA = {
+#         "name": "cloudbridge.com",
+#         "type": "MX",
+#         "ttl": "100",
+#         "data": ["10 mx1.cloudbridge.com",
+#                  "20 mx2.cloudbridge.com"]
+#     }
+#
+#     def test_create_record(self):
+#         """
+#         Ensure we can create a new record.
+#         """
+#         url = reverse('djcloudbridge:dns_zone-list', args=self._get_url_args())
+#         response = self.client.post(url, self.DNS_ZONE_DATA, format='json')
+#         zone_id = response.json()['id']
+#
+#         url = reverse('djcloudbridge:dns_record-list', args=self._get_url_args() + [zone_id])
+#         response = self.client.post(url, self.DNS_RECORD_DATA, format='json')
+#         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+#         self.assertEqual(response.json()['result']['data'], self.DNS_RECORD_DATA['data'])
