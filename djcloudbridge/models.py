@@ -10,6 +10,8 @@ from fernet_fields import EncryptedTextField
 
 from polymorphic.models import PolymorphicModel
 
+import yaml
+
 
 class DateNameAwareModel(models.Model):
     # Automatically add timestamps when object is created
@@ -98,6 +100,12 @@ class Region(PolymorphicModel):
         return "{0} ({1})".format(self.name, self.cloud.name)
 
     def save(self, *args, **kwargs):
+        if self.cloudbridge_settings:
+            try:
+                yaml.safe_load(self.cloudbridge_settings)
+            except Exception as e:
+                raise Exception("Invalid YAML syntax. CloudBridge settings"
+                                "must be in YAML format. Cause: {0}".format(e))
         if not self.region_id:
             # Newly created object, so set slug
             self.region_id = slugify(self.name)
