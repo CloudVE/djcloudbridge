@@ -11,6 +11,8 @@ from djcloudbridge import models as cb_models
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from .domain_model import get_cloud_provider
+
 
 class BaseAuthenticatedAPITestCase(APITestCase):
     """Base class for tests that need an authenticated user."""
@@ -30,6 +32,7 @@ class BaseAuthenticatedAPITestCase(APITestCase):
     ZONE_DATA = {
         'zone_id': 'default',
         'name': '',
+        'cloudbridge_settings': 'os_networking_zone_name: us-east-1a'
     }
 
     def _create_user_and_login(self):
@@ -54,7 +57,7 @@ class BaseAuthenticatedAPITestCase(APITestCase):
         original_create_provider = CloudProviderFactory.create_provider
 
         def _create_mock_provider_class(self, name, config):
-            provider = original_create_provider(self, ProviderList.MOCK, {})
+            provider = original_create_provider(self, ProviderList.MOCK, config)
             provider.setUpMock()
             return provider
 
@@ -155,6 +158,19 @@ class CredentialsTests(BaseAuthenticatedAPITestCase):
         url = reverse('credentials-list')
         response = self.client.post(url, self.CREDENTIALS_DATA, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_get_provider(self):
+        """
+        Ensure the extra provider settings are used
+        """
+        url = reverse('credentials-list')
+        response = self.client.get(url)
+        # The credentials we created in the base class should be listed
+        creds_dict = response.json()['results'][0]
+        zone = cb_models.Zone.objects.first()
+        provider = get_cloud_provider(zone, creds_dict)
+        assert 'os_networking_zone_name' in provider.config
+        assert provider.config['os_networking_zone_name'] == 'us-east-1a'
 
 
 class DnsZoneTests(BaseAuthenticatedAPITestCase):

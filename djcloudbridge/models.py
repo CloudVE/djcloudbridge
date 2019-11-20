@@ -153,6 +153,9 @@ class Zone(models.Model):
                                related_name='zones')
     name = models.CharField(max_length=60, verbose_name="Zone name",
                             blank=True, null=True)
+    cloudbridge_settings = models.TextField(
+        max_length=1024 * 16, blank=True, null=True,
+        help_text="Extra settings to pass to the cloudbridge provider")
 
     def __str__(self):
         region = self.region

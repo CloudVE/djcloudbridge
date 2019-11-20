@@ -6,6 +6,8 @@ reusable without a related web request.
 """
 from cloudbridge.factory import CloudProviderFactory, ProviderList
 
+import yaml
+
 from . import models
 
 
@@ -31,6 +33,8 @@ def get_cloud_provider(zone, cred_dict):
                   'os_region_name': region.name,
                   'os_zone_name': zone.name
                   }
+        if zone.cloudbridge_settings:
+            config.update(yaml.safe_load(zone.cloudbridge_settings))
         config.update(cred_dict or {})
         return CloudProviderFactory().create_provider(ProviderList.OPENSTACK,
                                                       config)
@@ -43,18 +47,24 @@ def get_cloud_provider(zone, cred_dict):
                   's3_is_secure': region.s3_is_secure,
                   's3_validate_certs': region.s3_validate_certs,
                   's3_endpoint_url': region.s3_endpoint_url}
+        if zone.cloudbridge_settings:
+            config.update(yaml.safe_load(zone.cloudbridge_settings))
         config.update(cred_dict or {})
         return CloudProviderFactory().create_provider(ProviderList.AWS,
                                                       config)
     elif isinstance(cloud, models.AzureCloud):
         config = {'azure_region_name': region.name,
                   'azure_zone_name': zone.name}
+        if zone.cloudbridge_settings:
+            config.update(yaml.safe_load(zone.cloudbridge_settings))
         config.update(cred_dict or {})
         return CloudProviderFactory().create_provider(ProviderList.AZURE,
                                                       config)
     elif isinstance(cloud, models.GCPCloud):
         config = {'gcp_region_name': region.name,
                   'gcp_zone_name': zone.name}
+        if zone.cloudbridge_settings:
+            config.update(yaml.safe_load(zone.cloudbridge_settings))
         config.update(cred_dict or {})
         return CloudProviderFactory().create_provider(ProviderList.GCP,
                                                       config)
