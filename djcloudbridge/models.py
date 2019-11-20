@@ -90,6 +90,9 @@ class Region(PolymorphicModel):
     region_id = models.SlugField(
         max_length=50, verbose_name="Region id",
         help_text="This is the id for the region and is used in the ReST url.")
+    cloudbridge_settings = models.TextField(
+        max_length=1024 * 16, blank=True, null=True,
+        help_text="Extra settings to pass to the cloudbridge provider")
 
     def __str__(self):
         return "{0} ({1})".format(self.name, self.cloud.name)
@@ -153,9 +156,6 @@ class Zone(models.Model):
                                related_name='zones')
     name = models.CharField(max_length=60, verbose_name="Zone name",
                             blank=True, null=True)
-    cloudbridge_settings = models.TextField(
-        max_length=1024 * 16, blank=True, null=True,
-        help_text="Extra settings to pass to the cloudbridge provider")
 
     def __str__(self):
         region = self.region

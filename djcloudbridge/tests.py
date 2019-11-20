@@ -11,6 +11,8 @@ from djcloudbridge import models as cb_models
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+import yaml
+
 from .domain_model import get_cloud_provider
 
 
@@ -26,13 +28,19 @@ class BaseAuthenticatedAPITestCase(APITestCase):
         'region_id': 'us-east-1',
         'name': 'us-east-1',
         'ec2_endpoint_url': 'https://ec2.us-east-1.amazonaws.com',
-        's3_endpoint_url': 'https://s3.amazonaws.com'
+        's3_endpoint_url': 'https://s3.amazonaws.com',
+        'cloudbridge_settings': yaml.safe_dump({
+            'zone_mappings': {
+                'us-east-1a': {
+                    'os_networking_zone_name': 'something'
+                }
+            }
+        })
     }
 
     ZONE_DATA = {
         'zone_id': 'default',
-        'name': '',
-        'cloudbridge_settings': 'os_networking_zone_name: us-east-1a'
+        'name': 'us-east-1a'
     }
 
     def _create_user_and_login(self):
@@ -170,7 +178,7 @@ class CredentialsTests(BaseAuthenticatedAPITestCase):
         zone = cb_models.Zone.objects.first()
         provider = get_cloud_provider(zone, creds_dict)
         assert 'os_networking_zone_name' in provider.config
-        assert provider.config['os_networking_zone_name'] == 'us-east-1a'
+        assert provider.config['os_networking_zone_name'] == 'something'
 
 
 class DnsZoneTests(BaseAuthenticatedAPITestCase):
