@@ -7,7 +7,7 @@ from ..drf_routers import HybridSimpleRouter
 
 profile_router = HybridSimpleRouter()
 profile_router.register(r'credentials', views.CredentialsViewSet,
-                        base_name='credentials')
+                        basename='credentials')
 
 urlpatterns = [
     url(r'user/', include(profile_router.urls))
