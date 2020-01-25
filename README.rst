@@ -54,7 +54,7 @@ Add djcloudbridge's URL patterns:
         url(r'^', include(djcloudbridge_urls)),
         ...
     ]
-    
+
 And finally, the following settings are recommended in your settings.py
 
 .. code-block:: python
@@ -67,19 +67,19 @@ And finally, the following settings are recommended in your settings.py
             'rest_framework.authentication.TokenAuthentication'
         )
     }
-    
+
     REST_AUTH_SERIALIZERS = {
         'USER_DETAILS_SERIALIZER': 'djcloudbridge.serializers.UserSerializer'
     }
 
     REST_SESSION_LOGIN = True
-    
+
     # **Make sure to change** the value for ``FERNET_KEYS`` variable
     # because it is used to encrypt sensitive database fields.
     FERNET_KEYS = [
         'new key for encrypting'
     ]
-    
+
 Running the API Locally
 -----------------------
 
@@ -99,11 +99,10 @@ interact with cloud resources for that provider.
 
 .. code-block:: bash
 
-    $ mkdir djcloudbridge && cd djcloudbridge
-    $ virtualenv -p python3.6 venv --prompt "(djcloudbridge)" && source venv/bin/activate
+    $ conda create --name djcb --yes python=3.6 && conda activate djcb
     $ git clone https://github.com/cloudve/djcloudbridge.git
     $ cd djcloudbridge
-    $ pip install -r requirements.txt
+    $ pip install -r requirements_dev.txt
     $ python manage.py migrate
     $ python manage.py createsuperuser
     $ python manage.py runserver
@@ -111,11 +110,6 @@ interact with cloud resources for that provider.
 2. Visit http://127.0.0.1:8000/admin/ to define your cloud connection settings.
 
 3. Visit http://127.0.0.1:8000/clouds/ to explore the API.
-
-Features
---------
-
-* TODO
 
 Running Tests
 -------------
