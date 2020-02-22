@@ -632,16 +632,18 @@ class DnsRecordSerializer(serializers.Serializer):
 
 
 class CloudRegionListSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(read_only=True)
     region_id = serializers.CharField(read_only=True)
     name = serializers.CharField(allow_blank=False)
     url = CloudRegionHyperlink(source="*")
 
     class Meta:
         model = models.Region
-        fields = ('region_id', 'cloud', 'name', 'url')
+        fields = ('id', 'region_id', 'cloud', 'name', 'url')
 
 
 class CloudZoneListSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(read_only=True)
     zone_id = serializers.CharField(read_only=True)
     region_id = serializers.CharField(read_only=True, source="region.region_id")
     cloud_id = serializers.CharField(read_only=True, source="region.cloud.id")
@@ -650,10 +652,11 @@ class CloudZoneListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Zone
-        fields = ('cloud_id', 'region_id', 'zone_id', 'region', 'name', 'url')
+        fields = ('id', 'cloud_id', 'region_id', 'zone_id', 'region', 'name', 'url')
 
 
 class CloudRegionDetailSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(read_only=True)
     region_id = serializers.CharField(read_only=True)
     name = serializers.CharField(allow_blank=False)
     zones = CloudZoneListSerializer(many=True, read_only=True)
@@ -664,6 +667,7 @@ class CloudRegionDetailSerializer(serializers.ModelSerializer):
 
 
 class CloudZoneSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(read_only=True)
     zone_id = serializers.CharField(read_only=True)
     region_id = serializers.CharField(read_only=True, source="region.region_id")
     cloud_id = serializers.CharField(read_only=True, source="region.cloud.id")
@@ -696,7 +700,7 @@ class CloudZoneSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.Zone
-        fields = ('cloud_id', 'region_id', 'zone_id', 'name', 'compute', 'security',
+        fields = ('id', 'cloud_id', 'region_id', 'zone_id', 'name', 'compute', 'security',
                   'storage', 'networking', 'dns')
 
 
