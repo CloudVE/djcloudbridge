@@ -46,7 +46,7 @@ history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 REQS_BASE = [
     'django-polymorphic>=2.0.3',  # for polymorphic model support
-    'django-rest-polymorphic>=0.1.8',  # drf plugin for polymorphic models
+    'django-rest-polymorphic==0.1.8',  # drf plugin for polymorphic models, 0.1.9 came out in April 2020 and breaks CL
     'django-nested-admin>=3.0.21',  # for nested object editing in django admin
     'djangorestframework>=3.0.0',
     'drf-nested-routers',
