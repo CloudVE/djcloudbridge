@@ -238,6 +238,8 @@ class OpenStackCredentials(CloudCredentials):
     os_username = models.CharField(max_length=50, blank=False, null=False)
     os_password = EncryptedCharField(max_length=50, blank=False, null=False)
     os_project_name = models.CharField(max_length=50, blank=False, null=False)
+    os_project_domain_id = models.CharField(max_length=50, blank=True,
+                                            null=True)
     os_project_domain_name = models.CharField(max_length=50, blank=True,
                                               null=True)
     os_user_domain_name = models.CharField(max_length=50, blank=True,
@@ -253,6 +255,8 @@ class OpenStackCredentials(CloudCredentials):
         d['os_password'] = self.os_password
         if self.os_project_name:
             d['os_project_name'] = self.os_project_name
+        if self.os_project_domain_id:
+            d['os_project_domain_id'] = self.os_project_domain_id
         if self.os_project_domain_name:
             d['os_project_domain_name'] = self.os_project_domain_name
         if self.os_user_domain_name:
