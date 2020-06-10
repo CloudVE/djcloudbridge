@@ -118,6 +118,8 @@ def get_credentials_from_request(cloud, request):
 
         if os_username or os_password:
             os_project_name = request.META.get('HTTP_CL_OS_PROJECT_NAME')
+            os_project_domain_id = request.META.get(
+                'HTTP_CL_OS_PROJECT_DOMAIN_ID')
             os_project_domain_name = request.META.get(
                 'HTTP_CL_OS_PROJECT_DOMAIN_NAME')
             os_user_domain_name = request.META.get(
@@ -126,6 +128,8 @@ def get_credentials_from_request(cloud, request):
             d = {'os_username': os_username, 'os_password': os_password}
             if os_project_name:
                 d['os_project_name'] = os_project_name
+            if os_project_domain_id:
+                d['os_project_domain_id'] = os_project_domain_id
             if os_project_domain_name:
                 d['os_project_domain_name'] = os_project_domain_name
             if os_user_domain_name:
