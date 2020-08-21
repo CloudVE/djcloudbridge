@@ -49,6 +49,7 @@ REQS_BASE = [
     'django-rest-polymorphic==0.1.8',  # drf plugin for polymorphic models, 0.1.9 came out in April 2020 and breaks CL
     'django-nested-admin>=3.0.21',  # for nested object editing in django admin
     'djangorestframework>=3.0.0',
+    'coreapi>=2.2.3',  # Provides REST API schema
     'drf-nested-routers',
     'django-rest-auth',  # for user serialization
     'django-fernet-fields',  # for encryption of user cloud credentials
