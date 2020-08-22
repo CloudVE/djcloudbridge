@@ -361,7 +361,7 @@ class CloudZoneHyperlink(serializers.HyperlinkedRelatedField):
         url_kwargs = {
             'cloud_pk': obj.region.cloud_id,
             'region_pk': obj.region.region_id,
-            'pk': obj.zone_id
+            'pk': obj.id
         }
         return reverse(view_name, kwargs=url_kwargs, request=request, format=format)
 
