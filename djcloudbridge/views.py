@@ -1,11 +1,14 @@
 import logging
 
+import coreapi
+
 from django.http.response import FileResponse
 from django.http.response import Http404
 
 from rest_framework import mixins
 from rest_framework import renderers
 from rest_framework import viewsets
+from rest_framework.filters import BaseFilterBackend
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -330,6 +333,36 @@ class LargeResultsSetPagination(PageNumberPagination):
     max_page_size = 1000
 
 
+class SimpleFilterBackend(BaseFilterBackend):
+    def get_schema_fields(self, view):
+        return [
+            coreapi.Field(
+                name='min_vcpus',
+                location='query',
+                required=False,
+                type='int'),
+            coreapi.Field(
+                name='min_ram',
+                location='query',
+                required=False,
+                type='int'),
+            coreapi.Field(
+                name='vm_type_prefix',
+                location='query',
+                required=False,
+                type='string'),
+        ]
+
+    def filter_queryset(self, request, queryset, view):
+        min_vcpus = int(request.query_params.get('min_vcpus', 0))
+        min_ram = int(request.query_params.get('min_ram', 0))
+        vm_type_prefix = request.query_params.get('vm_type_prefix', "")
+        return [vm_type for vm_type in queryset
+                if vm_type.name.startswith(vm_type_prefix) and
+                vm_type.vcpus >= min_vcpus and
+                vm_type.ram >= min_ram]
+
+
 class VMTypeViewSet(drf_helpers.CustomReadOnlyModelViewSet):
     """List compute VM types in a given cloud."""
 
@@ -337,6 +370,7 @@ class VMTypeViewSet(drf_helpers.CustomReadOnlyModelViewSet):
     # Required for the Browsable API renderer to have a nice form.
     serializer_class = serializers.VMTypeSerializer
     pagination_class = LargeResultsSetPagination
+    filter_backends = (SimpleFilterBackend,)
     lookup_value_regex = '[^/]+'
 
     def list_objects(self):
