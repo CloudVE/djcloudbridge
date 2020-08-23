@@ -340,12 +340,12 @@ class SimpleFilterBackend(BaseFilterBackend):
                 name='min_vcpus',
                 location='query',
                 required=False,
-                type='int'),
+                type='float'),
             coreapi.Field(
                 name='min_ram',
                 location='query',
                 required=False,
-                type='int'),
+                type='float'),
             coreapi.Field(
                 name='vm_type_prefix',
                 location='query',
@@ -354,8 +354,8 @@ class SimpleFilterBackend(BaseFilterBackend):
         ]
 
     def filter_queryset(self, request, queryset, view):
-        min_vcpus = int(request.query_params.get('min_vcpus', 0))
-        min_ram = int(request.query_params.get('min_ram', 0))
+        min_vcpus = float(request.query_params.get('min_vcpus', 0))
+        min_ram = float(request.query_params.get('min_ram', 0))
         vm_type_prefix = request.query_params.get('vm_type_prefix', "")
         return [vm_type for vm_type in queryset
                 if vm_type.name.startswith(vm_type_prefix) and
