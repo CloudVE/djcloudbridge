@@ -357,8 +357,12 @@ class SimpleFilterBackend(BaseFilterBackend):
         min_vcpus = float(request.query_params.get('min_vcpus', 0))
         min_ram = float(request.query_params.get('min_ram', 0))
         vm_type_prefix = request.query_params.get('vm_type_prefix', "")
+        if vm_type_prefix:
+            prefix_list = vm_type_prefix.split(",")
+        else:
+            prefix_list = [""]
         return [vm_type for vm_type in queryset
-                if vm_type.name.startswith(vm_type_prefix) and
+                if vm_type.name.startswith(tuple(prefix_list)) and
                 vm_type.vcpus >= min_vcpus and
                 vm_type.ram >= min_ram]
 
