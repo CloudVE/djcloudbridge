@@ -66,7 +66,6 @@ class BaseAuthenticatedAPITestCase(APITestCase):
 
         def _create_mock_provider_class(self, name, config):
             provider = original_create_provider(self, ProviderList.MOCK, config)
-            provider.setUpMock()
             return provider
 
         patch.object(CloudProviderFactory, 'create_provider',
@@ -92,7 +91,8 @@ class VmTypeTests(BaseAuthenticatedAPITestCase):
         url = reverse('djcloudbridge:vm_type-list', args=self._get_url_args())
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json()['results'][0]['id'], 't2.nano')
+        self.assertIn('t2.nano',
+                      (r['id'] for r in response.json()['results']))
 
 
 class NetworkTests(BaseAuthenticatedAPITestCase):
@@ -135,6 +135,8 @@ class InstanceTests(BaseAuthenticatedAPITestCase):
         """
         url = reverse('djcloudbridge:instance-list', args=self._get_url_args())
         response = self.client.post(url, self.INSTANCE_DATA, format='json')
+        import pydevd_pycharm
+        pydevd_pycharm.settrace('localhost', port=5678, stdoutToServer=True, stderrToServer=True)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
 
