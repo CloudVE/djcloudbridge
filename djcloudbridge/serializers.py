@@ -312,7 +312,7 @@ class VMTypeSerializer(serializers.Serializer):
     size_ephemeral_disks = serializers.CharField()
     num_ephemeral_disks = serializers.CharField()
     size_total_disk = serializers.CharField()
-    extra_data = serializers.DictField(serializers.CharField())
+    extra_data = serializers.DictField(child=serializers.CharField())
 
 
 class AttachmentInfoSerializer(serializers.Serializer):

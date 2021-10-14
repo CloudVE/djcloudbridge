@@ -1,2 +1,2 @@
-requirements.txtgit+https://github.com/CloudVE/cloudbridge
+git+https://github.com/CloudVE/cloudbridge
 -e "."
