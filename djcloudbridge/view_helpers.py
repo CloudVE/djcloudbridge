@@ -79,6 +79,9 @@ def get_credentials_from_dict(payload):
     if 'os_username' in payload.keys() and 'os_password' in payload.keys():
         creds = {'os_username': payload.pop('os_username'),
                  'os_password': payload.pop('os_password')}
+    elif 'os_application_credential_id' in payload.keys() and 'os_application_credential_secret' in payload.keys():
+        creds = {'os_application_credential_id': payload.pop('os_application_credential_id'),
+                 'os_application_credential_secret': payload.pop('os_application_credential_secret')}
     elif ('aws_access_key' in payload.keys() and
           'aws_secret_key' in payload.keys()):
         creds = {'aws_access_key': payload.pop('aws_access_key'),
