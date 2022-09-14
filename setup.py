@@ -52,7 +52,7 @@ REQS_BASE = [
     'coreapi>=2.2.3',  # Provides REST API schema
     'drf-nested-routers',
     'django-rest-auth',  # for user serialization
-    'django-fernet-fields',  # for encryption of user cloud credentials
+    'djfernet',  # for encryption of user cloud credentials
     'sqlparse',  # For migrations
     'cloudbridge'
 ]
