@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from django.conf.urls import include
-from django.conf.urls import url
+from django.urls import include
+from django.urls import re_path
 
 from . import views
 from .drf_routers import HybridNestedRouter
@@ -100,14 +100,14 @@ infrastructure_regex_pattern = r''
 app_name = "djcloudbridge"
 
 urlpatterns = [
-    url(infrastructure_regex_pattern, include(infra_router.urls)),
-    url(infrastructure_regex_pattern, include(cloud_router.urls)),
-    url(infrastructure_regex_pattern, include(cl_region_router.urls)),
-    url(infrastructure_regex_pattern, include(cl_zone_router.urls)),
-    url(infrastructure_regex_pattern, include(compute_region_router.urls)),
-    url(infrastructure_regex_pattern, include(vm_firewall_router.urls)),
-    url(infrastructure_regex_pattern, include(network_router.urls)),
-    url(infrastructure_regex_pattern, include(gateway_router.urls)),
-    url(infrastructure_regex_pattern, include(bucket_router.urls)),
-    url(infrastructure_regex_pattern, include(dns_router.urls)),
+    re_path(infrastructure_regex_pattern, include(infra_router.urls)),
+    re_path(infrastructure_regex_pattern, include(cloud_router.urls)),
+    re_path(infrastructure_regex_pattern, include(cl_region_router.urls)),
+    re_path(infrastructure_regex_pattern, include(cl_zone_router.urls)),
+    re_path(infrastructure_regex_pattern, include(compute_region_router.urls)),
+    re_path(infrastructure_regex_pattern, include(vm_firewall_router.urls)),
+    re_path(infrastructure_regex_pattern, include(network_router.urls)),
+    re_path(infrastructure_regex_pattern, include(gateway_router.urls)),
+    re_path(infrastructure_regex_pattern, include(bucket_router.urls)),
+    re_path(infrastructure_regex_pattern, include(dns_router.urls)),
 ]

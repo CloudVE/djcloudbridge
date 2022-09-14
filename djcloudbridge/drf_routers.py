@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.urls import re_path
 
 from rest_framework import routers, viewsets
 
@@ -47,8 +47,8 @@ class HybridRoutingMixin(object):
 
             # The view name has to have suffix "-list" due to specifics
             # of the DefaultRouter implementation.
-            ret.append(url(regex, viewset.as_view(),
-                           name='{0}-list'.format(basename)))
+            ret.append(re_path(regex, viewset.as_view(),
+                               name='{0}-list'.format(basename)))
 
         return ret
 
