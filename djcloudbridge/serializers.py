@@ -2,7 +2,7 @@ import urllib
 
 from cloudbridge.interfaces.resources import TrafficDirection
 
-from rest_auth.serializers import UserDetailsSerializer
+from dj_rest_auth.serializers import UserDetailsSerializer
 
 from rest_framework import serializers
 from rest_framework.reverse import reverse

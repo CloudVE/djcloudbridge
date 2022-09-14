@@ -51,7 +51,7 @@ REQS_BASE = [
     'djangorestframework>=3.0.0',
     'coreapi>=2.2.3',  # Provides REST API schema
     'drf-nested-routers',
-    'django-rest-auth',  # for user serialization
+    'dj-rest-auth',  # for user serialization
     'djfernet',  # for encryption of user cloud credentials
     'sqlparse',  # For migrations
     'cloudbridge'
