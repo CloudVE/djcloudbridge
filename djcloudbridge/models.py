@@ -235,9 +235,11 @@ class AWSCredentials(CloudCredentials):
 
 
 class OpenStackCredentials(CloudCredentials):
-    os_username = models.CharField(max_length=50, blank=False, null=False)
-    os_password = EncryptedCharField(max_length=50, blank=False, null=False)
-    os_project_name = models.CharField(max_length=50, blank=False, null=False)
+    os_application_credential_id = models.CharField(max_length=100, blank=True, null=True)
+    os_application_credential_secret = EncryptedCharField(max_length=150, blank=True, null=True)
+    os_username = models.CharField(max_length=50, blank=True, null=True)
+    os_password = EncryptedCharField(max_length=50, blank=True, null=True)
+    os_project_name = models.CharField(max_length=50, blank=True, null=True)
     os_project_domain_id = models.CharField(max_length=50, blank=True,
                                             null=True)
     os_project_domain_name = models.CharField(max_length=50, blank=True,
@@ -251,8 +253,14 @@ class OpenStackCredentials(CloudCredentials):
 
     def to_dict(self):
         d = super(OpenStackCredentials, self).to_dict()
-        d['os_username'] = self.os_username
-        d['os_password'] = self.os_password
+        if self.os_username:
+            d['os_username'] = self.os_username
+        if self.os_password:
+            d['os_password'] = self.os_password
+        if self.os_application_credential_id:
+            d['os_application_credential_id'] = self.os_application_credential_id
+        if self.os_application_credential_secret:
+            d['os_application_credential_secret'] = self.os_application_credential_secret
         if self.os_project_name:
             d['os_project_name'] = self.os_project_name
         if self.os_project_domain_id:
